@@ -6,7 +6,7 @@
         <Description>biak + Visual Studio = 💜</Description>
         <MoreInfo>https://github.com/kurnakovv/biak-visual-studio-extension</MoreInfo>
         <License>LICENSE</License>
-        <Icon>docs/images/biak-icon.png</Icon>
+        <Icon>docs/images/biak-preview-icon.png</Icon>
         <PreviewImage>docs/images/biak-preview-icon.png</PreviewImage>
         <Tags>todo</Tags>
         <Preview>false</Preview>
@@ -71,7 +71,7 @@
         <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
     </Dependencies>
     <Prerequisites>
-        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.14, )" DisplayName="Visual Studio core editor" />
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0, )" DisplayName="Visual Studio core editor" />
     </Prerequisites>
     <Assets>
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
