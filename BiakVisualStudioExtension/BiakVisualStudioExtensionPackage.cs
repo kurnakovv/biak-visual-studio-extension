@@ -34,7 +34,7 @@ public sealed class BiakVisualStudioExtensionPackage : AsyncPackage
     /// <summary>
     /// BiakVisualStudioExtensionPackage GUID string.
     /// </summary>
-    public const string PACKAGE_GUID_STRING = "852ea3c3-1ee7-4792-bd81-81bb6824e2cc";
+    private const string PACKAGE_GUID_STRING = "852ea3c3-1ee7-4792-bd81-81bb6824e2cc";
 
     #region Package Members
 
