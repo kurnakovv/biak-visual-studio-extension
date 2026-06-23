@@ -1,0 +1,49 @@
+name: InspectCode
+
+on:
+  push:
+    branches:
+      - '*'
+    paths-ignore:
+      - 'ReadMe.md'
+      - 'docs/**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - 'ReadMe.md'
+      - 'docs/**'
+  workflow_dispatch:
+
+jobs:
+  inspect-code:
+    runs-on: windows-latest
+
+    permissions:
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore dependencies
+        run: nuget restore
+
+      - name: Build
+        run: msbuild /p:Configuration=Release /p:TreatWarningsAsErrors=true
+
+      - name: ReSharper-InspectCode
+        uses: JetBrains/ReSharper-InspectCode@v0.9
+        with:
+          solution: ./biak-visual-studio-extension.slnx
