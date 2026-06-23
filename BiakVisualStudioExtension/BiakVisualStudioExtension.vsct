@@ -3,6 +3,16 @@
   <Extern href="stdidcmd.h"/>
   <Extern href="vsshlids.h"/>
 
+  <Symbols>
+    <GuidSymbol name="guidBiakPackage" value="{852ea3c3-1ee7-4792-bd81-81bb6824e2cc}" />
+    <GuidSymbol name="guidBiakCommandSet" value="{4a9b5c6d-7e8f-4a1b-9c2d-3e4f5a6b7c8d}">
+      <IDSymbol name="BiakSubMenu"      value="0x1000" />
+      <IDSymbol name="BiakMenuGroup"    value="0x1100" />
+      <IDSymbol name="EnableCommandId"  value="0x0100" />
+      <IDSymbol name="DisableCommandId" value="0x0101" />
+    </GuidSymbol>
+  </Symbols>
+
   <Commands package="guidBiakPackage">
     <Menus>
       <Menu guid="guidBiakCommandSet" id="BiakSubMenu" priority="0x0600" type="Menu">
@@ -35,14 +45,4 @@
       </Button>
     </Buttons>
   </Commands>
-
-  <Symbols>
-    <GuidSymbol name="guidBiakPackage" value="{852ea3c3-1ee7-4792-bd81-81bb6824e2cc}" />
-    <GuidSymbol name="guidBiakCommandSet" value="{4a9b5c6d-7e8f-4a1b-9c2d-3e4f5a6b7c8d}">
-      <IDSymbol name="BiakSubMenu"      value="0x1000" />
-      <IDSymbol name="BiakMenuGroup"    value="0x1100" />
-      <IDSymbol name="EnableCommandId"  value="0x0100" />
-      <IDSymbol name="DisableCommandId" value="0x0101" />
-    </GuidSymbol>
-  </Symbols>
 </CommandTable>
