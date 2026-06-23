@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/SolutionItems/">
+    <File Path="Directory.Build.props" />
+  </Folder>
   <Project Path="BiakVisualStudioExtension/BiakVisualStudioExtension.csproj">
     <Deploy />
   </Project>
