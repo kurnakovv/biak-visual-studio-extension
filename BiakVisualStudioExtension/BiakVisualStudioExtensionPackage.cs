@@ -47,6 +47,7 @@ public sealed class BiakVisualStudioExtensionPackage : AsyncPackage
     /// <returns>A task representing the async work of package initialization, or an already completed task if there is none. Do not return null from this method.</returns>
     protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
     {
+        // Test
         // When initialized asynchronously, the current thread may be a background thread at this point.
         // Do any initialization that requires the UI thread after switching to the UI thread.
         await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
