@@ -49,10 +49,14 @@ jobs:
           ref: ${{ env.PR_HEAD_SHA }}
           fetch-depth: 0
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore
 
       - name: Set VSIX PR version and name
         run: |
@@ -87,7 +91,7 @@ jobs:
           "VSIX_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Build solution (Release)
-        run: dotnet build biak-visual-studio-extension.slnx --configuration Release
+        run: msbuild biak-visual-studio-extension.slnx /p:Configuration=Release
 
       - name: Locate VSIX output
         run: |
