@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <Extern href="stdidcmd.h"/>
+  <Extern href="vsshlids.h"/>
+
+  <Commands package="guidBiakPackage">
+    <Menus>
+      <Menu guid="guidBiakCommandSet" id="BiakSubMenu" priority="0x0600" type="Menu">
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_TOOLS_EXT_TOOLS"/>
+        <Strings>
+          <ButtonText>biak</ButtonText>
+          <CommandName>biak</CommandName>
+        </Strings>
+      </Menu>
+    </Menus>
+
+    <Groups>
+      <Group guid="guidBiakCommandSet" id="BiakMenuGroup" priority="0x0600">
+        <Parent guid="guidBiakCommandSet" id="BiakSubMenu"/>
+      </Group>
+    </Groups>
+
+    <Buttons>
+      <Button guid="guidBiakCommandSet" id="EnableCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidBiakCommandSet" id="BiakMenuGroup"/>
+        <Strings>
+          <ButtonText>Enable</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidBiakCommandSet" id="DisableCommandId" priority="0x0200" type="Button">
+        <Parent guid="guidBiakCommandSet" id="BiakMenuGroup"/>
+        <Strings>
+          <ButtonText>Disable</ButtonText>
+        </Strings>
+      </Button>
+    </Buttons>
+  </Commands>
+
+  <Symbols>
+    <GuidSymbol name="guidBiakPackage" value="{852ea3c3-1ee7-4792-bd81-81bb6824e2cc}" />
+    <GuidSymbol name="guidBiakCommandSet" value="{4a9b5c6d-7e8f-4a1b-9c2d-3e4f5a6b7c8d}">
+      <IDSymbol name="BiakSubMenu"      value="0x1000" />
+      <IDSymbol name="BiakMenuGroup"    value="0x1100" />
+      <IDSymbol name="EnableCommandId"  value="0x0100" />
+      <IDSymbol name="DisableCommandId" value="0x0101" />
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>
