@@ -2,11 +2,11 @@
 // This file is licensed under the MIT License.
 // See the LICENSE file in the project root for full license information.
 
-using Microsoft.VisualStudio.Shell;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 
 namespace BiakVisualStudioExtension;
 
