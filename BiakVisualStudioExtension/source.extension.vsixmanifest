@@ -6,7 +6,7 @@
         <Description>biak + Visual Studio = 💜</Description>
         <MoreInfo>https://github.com/kurnakovv/biak-visual-studio-extension</MoreInfo>
         <License>LICENSE</License>
-        <Icon>docs/images/biak-icon.png</Icon>
+        <Icon>docs/images/biak-preview-icon.png</Icon>
         <PreviewImage>docs/images/biak-preview-icon.png</PreviewImage>
         <Tags>todo</Tags>
         <Preview>false</Preview>
