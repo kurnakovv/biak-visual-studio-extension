@@ -5,18 +5,32 @@
 
   <Symbols>
     <GuidSymbol name="guidBiakPackage" value="{852ea3c3-1ee7-4792-bd81-81bb6824e2cc}" />
+    <GuidSymbol name="guidBiakBitmap" value="{280E9253-D3C0-4AE0-84AB-93BB3D2D912E}">
+      <IDSymbol name="bmpBiak" value="1" />
+    </GuidSymbol>
     <GuidSymbol name="guidBiakCommandSet" value="{4a9b5c6d-7e8f-4a1b-9c2d-3e4f5a6b7c8d}">
-      <IDSymbol name="BiakSubMenu"      value="0x1000" />
-      <IDSymbol name="BiakMenuGroup"    value="0x1100" />
-      <IDSymbol name="EnableCommandId"  value="0x0100" />
-      <IDSymbol name="DisableCommandId" value="0x0101" />
+      <IDSymbol name="BiakToolbar"             value="0x2000" />
+      <IDSymbol name="BiakToolbarGroup"        value="0x2100" />
+      <IDSymbol name="BiakMenuController"      value="0x2200" />
+      <IDSymbol name="BiakMenuControllerGroup" value="0x2300" />
+      <IDSymbol name="EnableCommandId"         value="0x0100" />
+      <IDSymbol name="DisableCommandId"        value="0x0101" />
     </GuidSymbol>
   </Symbols>
 
   <Commands package="guidBiakPackage">
     <Menus>
-      <Menu guid="guidBiakCommandSet" id="BiakSubMenu" priority="0x0600" type="Menu">
-        <Parent guid="guidSHLMainMenu" id="IDG_VS_TOOLS_EXT_TOOLS"/>
+      <!-- Custom toolbar that appears in View > Toolbars > biak -->
+      <Menu guid="guidBiakCommandSet" id="BiakToolbar" type="Toolbar">
+        <Strings>
+          <ButtonText>biak</ButtonText>
+          <CommandName>biak</CommandName>
+        </Strings>
+      </Menu>
+      <!-- Split button: left part executes Enable, right arrow opens the dropdown -->
+      <Menu guid="guidBiakCommandSet" id="BiakMenuController" priority="0x0100" type="MenuController">
+        <Parent guid="guidBiakCommandSet" id="BiakToolbarGroup"/>
+        <CommandFlag>TextIsAnchorCommand</CommandFlag>
         <Strings>
           <ButtonText>biak</ButtonText>
           <CommandName>biak</CommandName>
@@ -25,24 +39,35 @@
     </Menus>
 
     <Groups>
-      <Group guid="guidBiakCommandSet" id="BiakMenuGroup" priority="0x0600">
-        <Parent guid="guidBiakCommandSet" id="BiakSubMenu"/>
+      <!-- Group on the toolbar that holds the MenuController -->
+      <Group guid="guidBiakCommandSet" id="BiakToolbarGroup" priority="0x0100">
+        <Parent guid="guidBiakCommandSet" id="BiakToolbar"/>
+      </Group>
+      <!-- Group inside the MenuController that holds Enable/Disable -->
+      <Group guid="guidBiakCommandSet" id="BiakMenuControllerGroup" priority="0x0100">
+        <Parent guid="guidBiakCommandSet" id="BiakMenuController"/>
       </Group>
     </Groups>
 
     <Buttons>
       <Button guid="guidBiakCommandSet" id="EnableCommandId" priority="0x0100" type="Button">
-        <Parent guid="guidBiakCommandSet" id="BiakMenuGroup"/>
+        <Parent guid="guidBiakCommandSet" id="BiakMenuControllerGroup"/>
+        <Icon guid="guidBiakBitmap" id="bmpBiak" />
         <Strings>
           <ButtonText>Enable</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidBiakCommandSet" id="DisableCommandId" priority="0x0200" type="Button">
-        <Parent guid="guidBiakCommandSet" id="BiakMenuGroup"/>
+        <Parent guid="guidBiakCommandSet" id="BiakMenuControllerGroup"/>
+        <Icon guid="guidBiakBitmap" id="bmpBiak" />
         <Strings>
           <ButtonText>Disable</ButtonText>
         </Strings>
       </Button>
     </Buttons>
+
+    <Bitmaps>
+      <Bitmap guid="guidBiakBitmap" href="..\docs\images\biak-reversed.png" usedList="bmpBiak" />
+    </Bitmaps>
   </Commands>
 </CommandTable>
