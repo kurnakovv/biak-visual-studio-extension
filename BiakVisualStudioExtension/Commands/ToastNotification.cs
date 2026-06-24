@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for full license information.
 
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell;
 
@@ -20,9 +21,17 @@ internal static class ToastNotification
             StartPosition = FormStartPosition.Manual,
             ShowInTaskbar = false,
             TopMost = true,
-            BackColor = Color.FromArgb(37, 37, 38),
+            BackColor = Color.FromArgb(52, 52, 56),
             ForeColor = Color.White,
             Size = new Size(360, 90),
+        };
+        toast.Region = CreateRoundedRegion(toast.ClientRectangle, 5);
+        toast.Paint += (_, e) =>
+        {
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            using Pen borderPen = new(Color.FromArgb(92, 92, 98), 2.25f);
+            using GraphicsPath borderPath = CreateRoundedPath(new Rectangle(0, 0, toast.Width - 1, toast.Height - 1), 5);
+            e.Graphics.DrawPath(borderPen, borderPath);
         };
 
         Label titleLabel = new()
@@ -88,5 +97,27 @@ internal static class ToastNotification
         closeButton.Click += (_, _) => CloseToast();
         toast.Shown += (_, _) => timer.Start();
         toast.Show();
+    }
+
+    private static Region CreateRoundedRegion(Rectangle bounds, int radius)
+    {
+        using GraphicsPath path = CreateRoundedPath(bounds, radius);
+        return new Region(path);
+    }
+
+    private static GraphicsPath CreateRoundedPath(Rectangle bounds, int radius)
+    {
+        GraphicsPath path = new();
+
+        int diameter = radius * 2;
+#pragma warning disable KUK0001 // Duplicate arguments passed to method
+        path.AddArc(bounds.X, bounds.Y, diameter, diameter, 180, 90);
+        path.AddArc(bounds.Right - diameter, bounds.Y, diameter, diameter, 270, 90);
+        path.AddArc(bounds.Right - diameter, bounds.Bottom - diameter, diameter, diameter, 0, 90);
+        path.AddArc(bounds.X, bounds.Bottom - diameter, diameter, diameter, 90, 90);
+#pragma warning restore KUK0001 // Duplicate arguments passed to method
+        path.CloseFigure();
+
+        return path;
     }
 }
