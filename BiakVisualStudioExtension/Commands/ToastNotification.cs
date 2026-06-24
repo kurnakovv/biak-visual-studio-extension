@@ -11,9 +11,33 @@ namespace BiakVisualStudioExtension.Commands;
 
 internal static class ToastNotification
 {
+    private const int TOAST_WIDTH = 360;
+    private const int MIN_TOAST_HEIGHT = 90;
+    private const int MAX_TOAST_HEIGHT = 260;
+    private const int HORIZONTAL_PADDING = 12;
+    private const int TOP_PADDING = 10;
+    private const int BOTTOM_PADDING = 12;
+    private const int TITLE_HEIGHT = 22;
+    private const int CONTENT_SPACING = 2;
+    private const int CLOSE_BUTTON_SIZE = 20;
+
     public static void Show(string title, string message)
     {
         ThreadHelper.ThrowIfNotOnUIThread();
+
+        int contentWidth = TOAST_WIDTH - (HORIZONTAL_PADDING * 2);
+        int titleWidth = contentWidth - CLOSE_BUTTON_SIZE - 8;
+
+        using Font measureFont = new("Segoe UI", 9);
+        Size measuredMessageSize = TextRenderer.MeasureText(
+            message,
+            measureFont,
+            new Size(contentWidth, int.MaxValue),
+            TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl);
+
+        int availableMessageHeight = MAX_TOAST_HEIGHT - (TOP_PADDING + TITLE_HEIGHT + CONTENT_SPACING + BOTTOM_PADDING);
+        int messageHeight = System.Math.Max(42, System.Math.Min(measuredMessageSize.Height, availableMessageHeight));
+        int toastHeight = System.Math.Max(MIN_TOAST_HEIGHT, TOP_PADDING + TITLE_HEIGHT + CONTENT_SPACING + messageHeight + BOTTOM_PADDING);
 
         Form toast = new()
         {
@@ -23,7 +47,7 @@ internal static class ToastNotification
             TopMost = true,
             BackColor = Color.FromArgb(52, 52, 56),
             ForeColor = Color.White,
-            Size = new Size(360, 90),
+            Size = new Size(TOAST_WIDTH, toastHeight),
         };
         toast.Region = CreateRoundedRegion(toast.ClientRectangle, 5);
         toast.Paint += (_, e) =>
@@ -39,8 +63,8 @@ internal static class ToastNotification
             Text = title,
             Font = new Font("Segoe UI", 10, FontStyle.Bold),
             ForeColor = Color.White,
-            Location = new Point(12, 10),
-            Size = new Size(336, 22),
+            Location = new Point(HORIZONTAL_PADDING, TOP_PADDING),
+            Size = new Size(titleWidth, TITLE_HEIGHT),
         };
 
         Label messageLabel = new()
@@ -48,8 +72,9 @@ internal static class ToastNotification
             Text = message,
             Font = new Font("Segoe UI", 9),
             ForeColor = Color.Gainsboro,
-            Location = new Point(12, 34),
-            Size = new Size(336, 42),
+            Location = new Point(HORIZONTAL_PADDING, TOP_PADDING + TITLE_HEIGHT + CONTENT_SPACING),
+            Size = new Size(contentWidth, messageHeight),
+            AutoEllipsis = measuredMessageSize.Height > messageHeight,
         };
 
         Button closeButton = new()
@@ -62,8 +87,8 @@ internal static class ToastNotification
             UseVisualStyleBackColor = false,
             TabStop = false,
             Cursor = Cursors.Hand,
-            Location = new Point(330, 8),
-            Size = new Size(20, 20),
+            Location = new Point(TOAST_WIDTH - HORIZONTAL_PADDING - CLOSE_BUTTON_SIZE, TOP_PADDING - 2),
+            Size = new Size(CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE),
         };
         closeButton.FlatAppearance.BorderSize = 0;
         closeButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(80, 80, 82);
