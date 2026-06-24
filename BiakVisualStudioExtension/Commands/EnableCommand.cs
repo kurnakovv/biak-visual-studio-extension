@@ -4,7 +4,9 @@
 
 using System;
 using System.ComponentModel.Design;
+using System.Diagnostics;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 
 namespace BiakVisualStudioExtension.Commands;
@@ -38,6 +40,63 @@ internal sealed class EnableCommand
 
     private void Execute(object sender, EventArgs e)
     {
-        Console.WriteLine("Test");
+        _ = RunBiakAsync();
+    }
+
+    private static async Task RunBiakAsync()
+    {
+        (int exitCode, string standardOutput, string standardError) = await Task.Run(
+            () =>
+            {
+                using Process process = new();
+                process.StartInfo = new ProcessStartInfo
+                {
+                    FileName = "dotnet",
+                    Arguments = "biak enable",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+
+                process.Start();
+                string standardOutput = process.StandardOutput.ReadToEnd();
+                string standardError = process.StandardError.ReadToEnd();
+                process.WaitForExit();
+
+                return (process.ExitCode, standardOutput, standardError);
+            }
+        );
+
+        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+        string message = string.IsNullOrWhiteSpace(standardError)
+            ? standardOutput.Trim()
+            : standardError.Trim();
+
+        if (message.Contains(".editorconfig has been restored from backup (.biak/.editorconfig-main).", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        if (exitCode == 0 && string.IsNullOrWhiteSpace(standardError))
+        {
+            VsShellUtilities.ShowMessageBox(
+                ServiceProvider.GlobalProvider,
+                string.IsNullOrWhiteSpace(message) ? "OK" : message,
+                "Biak",
+                OLEMSGICON.OLEMSGICON_INFO,
+                OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+            return;
+        }
+
+        VsShellUtilities.ShowMessageBox(
+            ServiceProvider.GlobalProvider,
+            string.IsNullOrWhiteSpace(message) ? "The command completed with an error." : message,
+            "Biak",
+            OLEMSGICON.OLEMSGICON_CRITICAL,
+            OLEMSGBUTTON.OLEMSGBUTTON_OK,
+            OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
     }
 }
