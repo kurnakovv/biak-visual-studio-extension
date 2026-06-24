@@ -43,21 +43,49 @@ internal static class ToastNotification
             Size = new Size(336, 42),
         };
 
+        Button closeButton = new()
+        {
+            Text = "X",
+            Font = new Font("Segoe UI", 9, FontStyle.Bold),
+            FlatStyle = FlatStyle.Flat,
+            ForeColor = Color.White,
+            BackColor = Color.FromArgb(62, 62, 64),
+            UseVisualStyleBackColor = false,
+            TabStop = false,
+            Cursor = Cursors.Hand,
+            Location = new Point(330, 8),
+            Size = new Size(20, 20),
+        };
+        closeButton.FlatAppearance.BorderSize = 0;
+        closeButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(80, 80, 82);
+        closeButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(80, 80, 82);
+
         toast.Controls.Add(titleLabel);
         toast.Controls.Add(messageLabel);
+        toast.Controls.Add(closeButton);
+        closeButton.BringToFront();
 
         Rectangle workArea = Screen.FromPoint(Cursor.Position).WorkingArea;
         toast.Location = new Point(workArea.Right - toast.Width - 16, workArea.Bottom - toast.Height - 16);
 
         Timer timer = new() { Interval = 4000 };
-        timer.Tick += (_, _) =>
+        bool isClosing = false;
+
+        void CloseToast()
         {
+            if (isClosing || toast.IsDisposed)
+            {
+                return;
+            }
+
+            isClosing = true;
             timer.Stop();
             timer.Dispose();
             toast.Close();
-            toast.Dispose();
-        };
+        }
 
+        timer.Tick += (_, _) => CloseToast();
+        closeButton.Click += (_, _) => CloseToast();
         toast.Shown += (_, _) => timer.Start();
         toast.Show();
     }
