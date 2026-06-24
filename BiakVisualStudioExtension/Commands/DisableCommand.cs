@@ -5,8 +5,6 @@
 using System;
 using System.ComponentModel.Design;
 using System.Diagnostics;
-using System.Drawing;
-using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
@@ -17,7 +15,6 @@ internal sealed class DisableCommand
 {
     public const int COMMAND_ID = 0x0101;
     public static readonly Guid s_commandSet = new("4a9b5c6d-7e8f-4a1b-9c2d-3e4f5a6b7c8d");
-    private static NotifyIcon? s_notifyIcon;
 
     private DisableCommand(IMenuCommandService commandService)
     {
@@ -95,34 +92,8 @@ internal sealed class DisableCommand
     private static async Task ShowSuccessNotificationAsync(string message)
     {
         await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-        ShowTrayNotification(message);
+        ToastNotification.Show("Biak", message);
         await ShowStatusBarMessageAsync(message);
-        DismissTrayNotification();
-    }
-
-    private static void ShowTrayNotification(string message)
-    {
-        ThreadHelper.ThrowIfNotOnUIThread();
-
-        s_notifyIcon?.Dispose();
-        s_notifyIcon = new NotifyIcon
-        {
-            Icon = SystemIcons.Information,
-            Visible = true,
-            BalloonTipTitle = "Biak",
-            BalloonTipText = message,
-            BalloonTipIcon = ToolTipIcon.Info,
-        };
-
-        s_notifyIcon.ShowBalloonTip(3000);
-    }
-
-    private static void DismissTrayNotification()
-    {
-        ThreadHelper.ThrowIfNotOnUIThread();
-
-        s_notifyIcon?.Dispose();
-        s_notifyIcon = null;
     }
 
     private static async Task ShowStatusBarMessageAsync(string message)
@@ -138,10 +109,6 @@ internal sealed class DisableCommand
 
         await Task.Delay(4000);
         await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-        if (ServiceProvider.GlobalProvider.GetService(typeof(SVsStatusbar)) is IVsStatusbar statusBarToClear)
-        {
-            _ = statusBarToClear.SetText(string.Empty);
-        }
+        _ = statusBar.SetText(string.Empty);
     }
 }
