@@ -15,6 +15,7 @@
       <IDSymbol name="BiakMenuControllerGroup" value="0x2300" />
       <IDSymbol name="EnableCommandId"         value="0x0100" />
       <IDSymbol name="DisableCommandId"        value="0x0101" />
+      <IDSymbol name="BiakCommandId"           value="0x0102" />
     </GuidSymbol>
   </Symbols>
 
@@ -50,16 +51,24 @@
     </Groups>
 
     <Buttons>
-      <Button guid="guidBiakCommandSet" id="EnableCommandId" priority="0x0100" type="Button">
+      <Button guid="guidBiakCommandSet" id="BiakCommandId" priority="0x0050" type="Button">
         <Parent guid="guidBiakCommandSet" id="BiakMenuControllerGroup"/>
         <Icon guid="guidBiakBitmap" id="bmpBiak" />
+        <CommandFlag>FixMenuController</CommandFlag>
+        <CommandFlag>NoShowOnMenuController</CommandFlag>
+        <Strings>
+          <ButtonText>biak</ButtonText>
+          <CommandName>biak</CommandName>
+        </Strings>
+      </Button>
+      <Button guid="guidBiakCommandSet" id="EnableCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidBiakCommandSet" id="BiakMenuControllerGroup"/>
         <Strings>
           <ButtonText>Enable</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidBiakCommandSet" id="DisableCommandId" priority="0x0200" type="Button">
         <Parent guid="guidBiakCommandSet" id="BiakMenuControllerGroup"/>
-        <Icon guid="guidBiakBitmap" id="bmpBiak" />
         <Strings>
           <ButtonText>Disable</ButtonText>
         </Strings>
