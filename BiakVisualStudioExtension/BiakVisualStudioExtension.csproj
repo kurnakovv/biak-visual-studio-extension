@@ -4,6 +4,7 @@
     <TargetFramework>net472</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>14</LangVersion>
+    <UseWindowsForms>true</UseWindowsForms>
 
     <!-- VSIX settings -->
     <VSSDKBuildToolsAutoSetup>true</VSSDKBuildToolsAutoSetup>

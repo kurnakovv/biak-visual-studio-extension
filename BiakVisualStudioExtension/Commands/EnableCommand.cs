@@ -5,6 +5,8 @@
 using System;
 using System.ComponentModel.Design;
 using System.Diagnostics;
+using System.Drawing;
+using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
@@ -15,6 +17,7 @@ internal sealed class EnableCommand
 {
     public const int COMMAND_ID = 0x0100;
     public static readonly Guid s_commandSet = new("4a9b5c6d-7e8f-4a1b-9c2d-3e4f5a6b7c8d");
+    private static NotifyIcon? s_notifyIcon;
 
     private EnableCommand(IMenuCommandService commandService)
     {
@@ -74,20 +77,9 @@ internal sealed class EnableCommand
             ? standardOutput.Trim()
             : standardError.Trim();
 
-        if (message.Contains(".editorconfig has been restored from backup (.biak/.editorconfig-main).", StringComparison.Ordinal))
-        {
-            return;
-        }
-
         if (exitCode == 0 && string.IsNullOrWhiteSpace(standardError))
         {
-            VsShellUtilities.ShowMessageBox(
-                ServiceProvider.GlobalProvider,
-                string.IsNullOrWhiteSpace(message) ? "OK" : message,
-                "Biak",
-                OLEMSGICON.OLEMSGICON_INFO,
-                OLEMSGBUTTON.OLEMSGBUTTON_OK,
-                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+            await ShowSuccessNotificationAsync(string.IsNullOrWhiteSpace(message) ? "Biak enabled successfully." : message);
             return;
         }
 
@@ -98,5 +90,58 @@ internal sealed class EnableCommand
             OLEMSGICON.OLEMSGICON_CRITICAL,
             OLEMSGBUTTON.OLEMSGBUTTON_OK,
             OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+    }
+
+    private static async Task ShowSuccessNotificationAsync(string message)
+    {
+        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+        ShowTrayNotification(message);
+        await ShowStatusBarMessageAsync(message);
+        DismissTrayNotification();
+    }
+
+    private static void ShowTrayNotification(string message)
+    {
+        ThreadHelper.ThrowIfNotOnUIThread();
+
+        s_notifyIcon?.Dispose();
+        s_notifyIcon = new NotifyIcon
+        {
+            Icon = SystemIcons.Information,
+            Visible = true,
+            BalloonTipTitle = "Biak",
+            BalloonTipText = message,
+            BalloonTipIcon = ToolTipIcon.Info,
+        };
+
+        s_notifyIcon.ShowBalloonTip(3000);
+    }
+
+    private static void DismissTrayNotification()
+    {
+        ThreadHelper.ThrowIfNotOnUIThread();
+
+        s_notifyIcon?.Dispose();
+        s_notifyIcon = null;
+    }
+
+    private static async Task ShowStatusBarMessageAsync(string message)
+    {
+        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+        if (ServiceProvider.GlobalProvider.GetService(typeof(SVsStatusbar)) is not IVsStatusbar statusBar)
+        {
+            return;
+        }
+
+        _ = statusBar.SetText(message);
+
+        await Task.Delay(4000);
+        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+        if (ServiceProvider.GlobalProvider.GetService(typeof(SVsStatusbar)) is IVsStatusbar statusBarToClear)
+        {
+            _ = statusBarToClear.SetText(string.Empty);
+        }
     }
 }
