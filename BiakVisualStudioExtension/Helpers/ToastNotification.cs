@@ -1,4 +1,4 @@
-// Copyright (c) 2026 kurnakovv
+﻿// Copyright (c) 2026 kurnakovv
 // This file is licensed under the MIT License.
 // See the LICENSE file in the project root for full license information.
 
@@ -9,7 +9,7 @@ using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell;
 
-namespace BiakVisualStudioExtension.Commands;
+namespace BiakVisualStudioExtension.Helpers;
 
 internal enum ToastIconKind
 {
