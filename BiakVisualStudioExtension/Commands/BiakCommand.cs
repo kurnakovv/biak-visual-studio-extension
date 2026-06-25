@@ -11,8 +11,8 @@ namespace BiakVisualStudioExtension.Commands;
 
 internal sealed class BiakCommand
 {
-    public const int COMMAND_ID = 0x0102;
-    public static readonly Guid s_commandSet = new("4a9b5c6d-7e8f-4a1b-9c2d-3e4f5a6b7c8d");
+    private const int COMMAND_ID = 0x0102;
+    private static readonly Guid s_commandSet = new("4a9b5c6d-7e8f-4a1b-9c2d-3e4f5a6b7c8d");
 
     private BiakCommand(IMenuCommandService commandService)
     {

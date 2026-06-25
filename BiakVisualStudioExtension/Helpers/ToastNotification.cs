@@ -200,7 +200,7 @@ internal static class ToastNotification
             ToastIconKind.Error => SystemIcons.Error.ToBitmap(),
             ToastIconKind.Warning => SystemIcons.Warning.ToBitmap(),
             ToastIconKind.Info => SystemIcons.Information.ToBitmap(),
-            _ => SystemIcons.Information.ToBitmap(),
+            _ => throw new NotImplementedException($"Icon kind {iconKind} is not implemented."),
         };
     }
 
@@ -214,11 +214,9 @@ internal static class ToastNotification
         using SolidBrush background = new(Color.FromArgb(38, 172, 94));
         graphics.FillEllipse(background, 0, 0, ICON_SIZE - 1, ICON_SIZE - 1);
 
-        using Pen checkPen = new(Color.White, 2f)
-        {
-            StartCap = LineCap.Round,
-            EndCap = LineCap.Round,
-        };
+        using Pen checkPen = new(Color.White, 2f);
+        checkPen.StartCap = LineCap.Round;
+        checkPen.EndCap = LineCap.Round;
 
         graphics.DrawLines(
             checkPen,
