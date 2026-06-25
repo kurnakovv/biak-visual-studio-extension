@@ -24,6 +24,17 @@ internal static class BiakToggleCommandExecutor
                 ? standardOutput.Trim()
                 : standardError.Trim();
 
+            if (message.Contains("Biak is not initialized.") && message.Contains("Please run: dotnet biak setup"))
+            {
+                ToastNotification.Show(
+                    "Biak",
+                    message,
+                    "https://github.com/kurnakovv/biak/wiki/Setup",
+                    ToastIconKind.Warning
+                );
+                return;
+            }
+
             if (exitCode == 0 && string.IsNullOrWhiteSpace(standardError))
             {
                 string successMessage = string.IsNullOrWhiteSpace(message) ? defaultSuccessMessage : message;
