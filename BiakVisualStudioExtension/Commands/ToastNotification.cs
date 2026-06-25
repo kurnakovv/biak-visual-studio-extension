@@ -34,19 +34,10 @@ internal static class ToastNotification
     private const int ICON_SIZE = 16;
     private const int ICON_SPACING = 8;
 
-    public static void Show(string title, string message)
-    {
-        Show(title, message, null, ToastIconKind.None);
-    }
-
     public static void Show(string title, string message, ToastIconKind iconKind)
     {
+        ThreadHelper.ThrowIfNotOnUIThread();
         Show(title, message, null, iconKind);
-    }
-
-    public static void Show(string title, string message, string? linkUrl)
-    {
-        Show(title, message, linkUrl, ToastIconKind.None);
     }
 
     public static void Show(string title, string message, string? linkUrl, ToastIconKind iconKind)
