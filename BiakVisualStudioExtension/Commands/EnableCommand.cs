@@ -45,54 +45,93 @@ internal sealed class EnableCommand
 
     private static async Task RunBiakAsync()
     {
-        (int exitCode, string standardOutput, string standardError) = await Task.Run(
-            () =>
-            {
-                using Process process = new();
-                process.StartInfo = new ProcessStartInfo
-                {
-                    FileName = "dotnet",
-                    Arguments = "biak enable",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                };
-
-                process.Start();
-                string standardOutput = process.StandardOutput.ReadToEnd();
-                string standardError = process.StandardError.ReadToEnd();
-                process.WaitForExit();
-
-                return (process.ExitCode, standardOutput, standardError);
-            }
-        );
-
-        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-        string message = string.IsNullOrWhiteSpace(standardError)
-            ? standardOutput.Trim()
-            : standardError.Trim();
-
-        if (exitCode == 0 && string.IsNullOrWhiteSpace(standardError))
+        try
         {
-            await ShowSuccessNotificationAsync(string.IsNullOrWhiteSpace(message) ? "Biak enabled successfully." : message);
-            return;
+            (int exitCode, string standardOutput, string standardError) = await Task.Run(
+                () =>
+                {
+                    using Process process = new();
+                    process.StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "dotnet",
+                        Arguments = "biak enable",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                    };
+
+                    process.Start();
+                    string standardOutput = process.StandardOutput.ReadToEnd();
+                    string standardError = process.StandardError.ReadToEnd();
+                    process.WaitForExit();
+
+                    return (process.ExitCode, standardOutput, standardError);
+                }
+            );
+
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            string message = string.IsNullOrWhiteSpace(standardError)
+                ? standardOutput.Trim()
+                : standardError.Trim();
+
+            if (exitCode == 0 && string.IsNullOrWhiteSpace(standardError))
+            {
+                await ShowSuccessNotificationAsync(string.IsNullOrWhiteSpace(message) ? "Biak enabled successfully." : message);
+                return;
+            }
+
+            if (IsBiakNotInstalledError(standardError))
+            {
+                ToastNotification.Show(
+                    "Biak",
+                    "dotnet biak is not installed. Install the tool and try again.",
+                    "https://github.com/kurnakovv/biak",
+                    ToastIconKind.Error
+                );
+                return;
+            }
+
+            VsShellUtilities.ShowMessageBox(
+                ServiceProvider.GlobalProvider,
+                string.IsNullOrWhiteSpace(message) ? "The command completed with an error." : message,
+                "Biak",
+                OLEMSGICON.OLEMSGICON_CRITICAL,
+                OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+        }
+        catch (Exception ex)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            VsShellUtilities.ShowMessageBox(
+                ServiceProvider.GlobalProvider,
+                ex.Message,
+                "Biak",
+                OLEMSGICON.OLEMSGICON_CRITICAL,
+                OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+        }
+    }
+
+    private static bool IsBiakNotInstalledError(string standardError)
+    {
+        if (string.IsNullOrWhiteSpace(standardError))
+        {
+            return false;
         }
 
-        VsShellUtilities.ShowMessageBox(
-            ServiceProvider.GlobalProvider,
-            string.IsNullOrWhiteSpace(message) ? "The command completed with an error." : message,
-            "Biak",
-            OLEMSGICON.OLEMSGICON_CRITICAL,
-            OLEMSGBUTTON.OLEMSGBUTTON_OK,
-            OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+        string normalizedError = standardError.ToLowerInvariant();
+        return normalizedError.Contains("dotnet-biak")
+            || normalizedError.Contains("could not execute because the specified command or file was not found")
+            || normalizedError.Contains("no executable found matching command");
     }
 
     private static async Task ShowSuccessNotificationAsync(string message)
     {
         await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-        ToastNotification.Show("Biak", message);
+        ToastNotification.Show("Biak", message, ToastIconKind.Success);
         await ShowStatusBarMessageAsync(message);
     }
 
