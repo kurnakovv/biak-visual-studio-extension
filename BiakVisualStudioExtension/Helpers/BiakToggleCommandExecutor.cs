@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 
 namespace BiakVisualStudioExtension.Helpers;
 
@@ -75,29 +76,33 @@ internal static class BiakToggleCommandExecutor
         }
     }
 
-    private static Task<(int ExitCode, string StandardOutput, string StandardError)> RunProcessAsync(string arguments)
+    private static async Task<(int ExitCode, string StandardOutput, string StandardError)> RunProcessAsync(string arguments)
     {
-        return Task.Run(
-            () =>
-            {
-                using Process process = new();
-                process.StartInfo = new ProcessStartInfo
-                {
-                    FileName = "dotnet",
-                    Arguments = "biak " + arguments,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                };
+        using Process process = new();
+        process.StartInfo = new ProcessStartInfo
+        {
+            FileName = "dotnet",
+            Arguments = "biak " + arguments,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
 
-                process.Start();
-                string standardOutput = process.StandardOutput.ReadToEnd();
-                string standardError = process.StandardError.ReadToEnd();
-                process.WaitForExit();
+        process.Start();
+        Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync();
+        Task<string> stderrTask = process.StandardError.ReadToEndAsync();
 
-                return (process.ExitCode, standardOutput, standardError);
-            });
+        await Task.WhenAll(
+            stdoutTask,
+            stderrTask,
+            process.WaitForExitAsync()
+        );
+
+        string standardOutput = await stdoutTask;
+        string standardError = await stderrTask;
+
+        return (process.ExitCode, standardOutput, standardError);
     }
 
     private static bool IsBiakNotInstalledError(string standardError)
