@@ -9,13 +9,13 @@
       <IDSymbol name="bmpBiak" value="1" />
     </GuidSymbol>
     <GuidSymbol name="guidBiakCommandSet" value="{4a9b5c6d-7e8f-4a1b-9c2d-3e4f5a6b7c8d}">
-      <IDSymbol name="BiakToolbar"             value="0x2000" />
-      <IDSymbol name="BiakToolbarGroup"        value="0x2100" />
-      <IDSymbol name="BiakMenuController"      value="0x2200" />
-      <IDSymbol name="BiakMenuControllerGroup" value="0x2300" />
-      <IDSymbol name="EnableCommandId"         value="0x0100" />
-      <IDSymbol name="DisableCommandId"        value="0x0101" />
-      <IDSymbol name="BiakCommandId"           value="0x0102" />
+      <IDSymbol value="0x2000" name="BiakToolbar" />
+      <IDSymbol value="0x2100" name="BiakToolbarGroup" />
+      <IDSymbol value="0x2200" name="BiakMenuController" />
+      <IDSymbol value="0x2300" name="BiakMenuControllerGroup" />
+      <IDSymbol value="0x0100" name="EnableCommandId" />
+      <IDSymbol value="0x0101" name="DisableCommandId" />
+      <IDSymbol value="0x0102" name="BiakCommandId" />
     </GuidSymbol>
   </Symbols>
 
