@@ -1,5 +1,5 @@
 <div align="center">
- <img src="docs/images/readmepreview.png" height="150px" />
+ <img src="docs/images/readmepreview.png" height="150px" alt="biak Visual Studio extension" />
 
  ![Visitors](https://api.visitorbadge.io/api/VisitorHit?user=kurnakovv&repo=biak-visual-studio-extension&countColor=%237B1E7A&style=flat)
  [![Build and tests](https://github.com/kurnakovv/biak-visual-studio-extension/actions/workflows/build-and-tests.yml/badge.svg)](https://github.com/kurnakovv/biak-visual-studio-extension/actions/workflows/build-and-tests.yml)
