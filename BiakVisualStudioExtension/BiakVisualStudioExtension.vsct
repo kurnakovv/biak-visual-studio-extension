@@ -28,7 +28,7 @@
           <CommandName>biak</CommandName>
         </Strings>
       </Menu>
-      <!-- Split button: left part executes Enable, right arrow opens the dropdown -->
+      <!-- Split button: left part executes command, right arrow opens the dropdown -->
       <Menu guid="guidBiakCommandSet" id="BiakMenuController" priority="0x0100" type="MenuController">
         <Parent guid="guidBiakCommandSet" id="BiakToolbarGroup"/>
         <CommandFlag>TextIsAnchorCommand</CommandFlag>
