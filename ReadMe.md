@@ -15,7 +15,7 @@ Visual Studio extension for [biak](https://github.com/kurnakovv/biak) tool 👁�
 
 ## 📺 Preview
 
-<kbd><img src="docs/images/preview_video.gif" /></kbd>
+<kbd><img src="docs/images/preview_video.gif" alt="Extension preview" /></kbd>
 
 ## 🧩 Supported versions
 * Visual Studio 2022
