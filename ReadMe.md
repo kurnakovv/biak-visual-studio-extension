@@ -5,7 +5,7 @@
  [![Build and tests](https://github.com/kurnakovv/biak-visual-studio-extension/actions/workflows/build-and-tests.yml/badge.svg)](https://github.com/kurnakovv/biak-visual-studio-extension/actions/workflows/build-and-tests.yml)
  [![.NET format](https://github.com/kurnakovv/biak-visual-studio-extension/actions/workflows/dotnet-format.yml/badge.svg)](https://github.com/kurnakovv/biak-visual-studio-extension/actions/workflows/dotnet-format.yml)
  [![InspectCode](https://github.com/kurnakovv/biak-visual-studio-extension/actions/workflows/inspect-code.yml/badge.svg)](https://github.com/kurnakovv/biak-visual-studio-extension/actions/workflows/inspect-code.yml)
- [![MIT License](https://img.shields.io/github/license/kurnakovv/biak-visual-studio-extension?color=%230b0&style=flat)](https://github.com/kurnakovv/biak-visual-studio-extension/blob/dev/LICENSE)
+ [![MIT License](https://img.shields.io/github/license/kurnakovv/biak-visual-studio-extension?color=%230b0&style=flat)](LICENSE)
 </div>
 
 ![line](docs/images/line.gif)
