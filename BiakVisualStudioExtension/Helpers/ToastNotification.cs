@@ -165,6 +165,11 @@ internal static class ToastNotification
         Timer timer = new() { Interval = hasLink ? 7000 : 4000 };
         bool isClosing = false;
 
+        timer.Tick += (_, _) => CloseToast();
+        closeButton.Click += (_, _) => CloseToast();
+        toast.Shown += (_, _) => timer.Start();
+        toast.Show();
+
         void CloseToast()
         {
             if (isClosing || toast.IsDisposed)
@@ -184,11 +189,6 @@ internal static class ToastNotification
 
             toast.Close();
         }
-
-        timer.Tick += (_, _) => CloseToast();
-        closeButton.Click += (_, _) => CloseToast();
-        toast.Shown += (_, _) => timer.Start();
-        toast.Show();
     }
 
     private static Image GetIconImage(ToastIconKind iconKind)
