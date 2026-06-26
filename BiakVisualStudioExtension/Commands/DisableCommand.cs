@@ -39,6 +39,6 @@ internal sealed class DisableCommand
 
     private void Execute(object sender, EventArgs e)
     {
-        _ = BiakToggleCommandExecutor.ExecuteAsync("disable", "Biak disabled successfully.");
+        _ = BiakToggleCommandExecutor.ExecuteAsync("disable");
     }
 }

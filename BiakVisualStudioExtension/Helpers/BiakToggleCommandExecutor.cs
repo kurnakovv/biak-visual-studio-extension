@@ -13,7 +13,7 @@ namespace BiakVisualStudioExtension.Helpers;
 
 internal static class BiakToggleCommandExecutor
 {
-    public static async Task ExecuteAsync(string arguments, string defaultSuccessMessage)
+    public static async Task ExecuteAsync(string arguments)
     {
         try
         {
@@ -38,7 +38,7 @@ internal static class BiakToggleCommandExecutor
 
             if (exitCode == 0 && string.IsNullOrWhiteSpace(standardError))
             {
-                string successMessage = string.IsNullOrWhiteSpace(message) ? defaultSuccessMessage : message;
+                string successMessage = string.IsNullOrWhiteSpace(message) ? "The command was executed successfully." : message;
                 await ShowSuccessNotificationAsync(successMessage);
                 return;
             }

@@ -39,6 +39,6 @@ internal sealed class EnableCommand
 
     private void Execute(object sender, EventArgs e)
     {
-        _ = BiakToggleCommandExecutor.ExecuteAsync("enable", "Biak enabled successfully.");
+        _ = BiakToggleCommandExecutor.ExecuteAsync("enable");
     }
 }
