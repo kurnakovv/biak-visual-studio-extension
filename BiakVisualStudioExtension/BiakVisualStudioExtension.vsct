@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <Extern href="stdidcmd.h"/>
+  <Extern href="vsshlids.h"/>
+
+  <Symbols>
+    <GuidSymbol name="guidBiakPackage" value="{852ea3c3-1ee7-4792-bd81-81bb6824e2cc}" />
+    <GuidSymbol name="guidBiakBitmap" value="{280E9253-D3C0-4AE0-84AB-93BB3D2D912E}">
+      <IDSymbol name="bmpBiak" value="1" />
+    </GuidSymbol>
+    <GuidSymbol name="guidBiakCommandSet" value="{4a9b5c6d-7e8f-4a1b-9c2d-3e4f5a6b7c8d}">
+      <IDSymbol value="0x2000" name="BiakToolbar" />
+      <IDSymbol value="0x2100" name="BiakToolbarGroup" />
+      <IDSymbol value="0x2200" name="BiakMenuController" />
+      <IDSymbol value="0x2300" name="BiakMenuControllerGroup" />
+      <IDSymbol value="0x0100" name="EnableCommandId" />
+      <IDSymbol value="0x0101" name="DisableCommandId" />
+      <IDSymbol value="0x0102" name="BiakCommandId" />
+    </GuidSymbol>
+  </Symbols>
+
+  <Commands package="guidBiakPackage">
+    <Menus>
+      <!-- Custom toolbar that appears in View > Toolbars > biak -->
+      <Menu guid="guidBiakCommandSet" id="BiakToolbar" type="Toolbar">
+        <Strings>
+          <ButtonText>biak</ButtonText>
+          <CommandName>biak</CommandName>
+        </Strings>
+      </Menu>
+      <!-- Split button: left part executes command, right arrow opens the dropdown -->
+      <Menu guid="guidBiakCommandSet" id="BiakMenuController" priority="0x0100" type="MenuController">
+        <Parent guid="guidBiakCommandSet" id="BiakToolbarGroup"/>
+        <CommandFlag>TextIsAnchorCommand</CommandFlag>
+        <Strings>
+          <ButtonText>biak</ButtonText>
+          <CommandName>biak</CommandName>
+        </Strings>
+      </Menu>
+    </Menus>
+
+    <Groups>
+      <!-- Group on the toolbar that holds the MenuController -->
+      <Group guid="guidBiakCommandSet" id="BiakToolbarGroup" priority="0x0100">
+        <Parent guid="guidBiakCommandSet" id="BiakToolbar"/>
+      </Group>
+      <!-- Group inside the MenuController that holds Enable/Disable -->
+      <Group guid="guidBiakCommandSet" id="BiakMenuControllerGroup" priority="0x0100">
+        <Parent guid="guidBiakCommandSet" id="BiakMenuController"/>
+      </Group>
+    </Groups>
+
+    <Buttons>
+      <Button guid="guidBiakCommandSet" id="BiakCommandId" priority="0x0050" type="Button">
+        <Parent guid="guidBiakCommandSet" id="BiakMenuControllerGroup"/>
+        <Icon guid="guidBiakBitmap" id="bmpBiak" />
+        <CommandFlag>FixMenuController</CommandFlag>
+        <CommandFlag>NoShowOnMenuController</CommandFlag>
+        <Strings>
+          <ButtonText>biak</ButtonText>
+          <CommandName>biak</CommandName>
+        </Strings>
+      </Button>
+      <Button guid="guidBiakCommandSet" id="EnableCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidBiakCommandSet" id="BiakMenuControllerGroup"/>
+        <Strings>
+          <ButtonText>Enable</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidBiakCommandSet" id="DisableCommandId" priority="0x0200" type="Button">
+        <Parent guid="guidBiakCommandSet" id="BiakMenuControllerGroup"/>
+        <Strings>
+          <ButtonText>Disable</ButtonText>
+        </Strings>
+      </Button>
+    </Buttons>
+
+    <Bitmaps>
+      <Bitmap guid="guidBiakBitmap" href="..\docs\images\biak-reversed.png" usedList="bmpBiak" />
+    </Bitmaps>
+  </Commands>
+</CommandTable>
