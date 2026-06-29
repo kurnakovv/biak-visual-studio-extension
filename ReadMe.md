@@ -24,7 +24,7 @@ Visual Studio extension for [biak](https://github.com/kurnakovv/biak) tool 👁�
 ## 🚀 Installation
 1️⃣ Install [biak](https://github.com/kurnakovv/biak)
 
-2️⃣ Install the extension via Visual Studio Marketplace or via [GitHub releases](https://github.com/kurnakovv/biak-visual-studio-extension/releases)
+2️⃣ Install the extension via [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=kurnakovv.biak) or via [GitHub releases](https://github.com/kurnakovv/biak-visual-studio-extension/releases)
 
 3️⃣ Visual Studio: `View` -> `Toolbars` -> `biak`
 
