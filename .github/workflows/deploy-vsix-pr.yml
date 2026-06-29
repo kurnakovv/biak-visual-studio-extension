@@ -1,0 +1,128 @@
+name: Deploy VSIX for PR
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  MANIFEST_PATH: BiakVisualStudioExtension/source.extension.vsixmanifest
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  build-and-deploy:
+    if: >
+      github.event.issue.pull_request != null &&
+      startsWith(github.event.comment.body, '/deploy') &&
+      github.event.comment.author_association == 'OWNER'
+
+    runs-on: windows-latest
+
+    steps:
+      - name: Calculate deploy number for PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $comments = gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments --jq '[.[] | select((.body | startswith("/deploy")) and (.author_association == "OWNER"))]'
+          $deployNumber = ($comments | ConvertFrom-Json).Count
+          "DEPLOY_NUMBER=$deployNumber" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Resolve PR head SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $pr = gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}
+          $sha = ($pr | ConvertFrom-Json).head.sha
+          "PR_HEAD_SHA=$sha" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.PR_HEAD_SHA }}
+          fetch-depth: 0
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore
+
+      - name: Set VSIX PR version and name
+        run: |
+          $version = "0.${{ github.event.issue.number }}.${{ env.DEPLOY_NUMBER }}"
+
+          [xml]$manifest = Get-Content -Path "${env:MANIFEST_PATH}"
+          $namespaceUri = "http://schemas.microsoft.com/developer/vsx-schema/2011"
+          $ns = New-Object System.Xml.XmlNamespaceManager($manifest.NameTable)
+          $ns.AddNamespace("vsx", $namespaceUri)
+
+          $identity = $manifest.SelectSingleNode("/vsx:PackageManifest/vsx:Metadata/vsx:Identity", $ns)
+          if (-not $identity) { throw "Identity node not found in VSIX manifest." }
+
+          $displayName = $manifest.SelectSingleNode("/vsx:PackageManifest/vsx:Metadata/vsx:DisplayName", $ns)
+          if (-not $displayName) { throw "DisplayName node not found in VSIX manifest." }
+
+          $identity.SetAttribute("Version", $version)
+          $identity.SetAttribute("Id", "$($identity.GetAttribute('Id')).PR")
+          $displayName.InnerText = "$($displayName.InnerText) PR"
+
+          $preview = $manifest.SelectSingleNode("/vsx:PackageManifest/vsx:Metadata/vsx:Preview", $ns)
+          if (-not $preview) {
+            $metadata = $manifest.SelectSingleNode("/vsx:PackageManifest/vsx:Metadata", $ns)
+            if (-not $metadata) { throw "Metadata node not found in VSIX manifest." }
+            $preview = $manifest.CreateElement("Preview", $namespaceUri)
+            [void]$metadata.AppendChild($preview)
+          }
+          $preview.InnerText = "true"
+
+          $manifest.Save("${env:MANIFEST_PATH}")
+
+          "VSIX_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build solution (Release)
+        run: msbuild biak-visual-studio-extension.slnx /p:Configuration=Release
+
+      - name: Locate VSIX output
+        run: |
+          $vsix = Get-ChildItem -Path "BiakVisualStudioExtension/bin/Release" -Filter "*.vsix" -Recurse |
+            Where-Object { $_.Name -notlike "*.vsixmanifest" } |
+            Select-Object -First 1
+
+          if (-not $vsix) { throw "VSIX package not found under BiakVisualStudioExtension/bin/Release." }
+
+          "VSIX_PATH=$($vsix.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsix-pr-${{ github.event.issue.number }}-${{ env.DEPLOY_NUMBER }}
+          path: ${{ env.VSIX_PATH }}
+          if-no-files-found: error
+
+      - name: Send report message
+        uses: mshick/add-pr-comment@v2
+        with:
+          refresh-message-position: true
+          message: |
+            🚀 PR VSIX is ready.
+
+            Version: `${{ env.VSIX_VERSION }}`
+            Artifact: `vsix-pr-${{ github.event.issue.number }}-${{ env.DEPLOY_NUMBER }}`
+
+            You can download it from this run's artifacts:
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            How to install:
+            1. Download the `.vsix` file from artifacts.
+            2. Run the `.vsix` file and install the extension for Visual Studio.

@@ -1,0 +1,96 @@
+name: Deploy VSIX Preview
+
+on:
+  push:
+    branches:
+      - dev
+    paths-ignore:
+      - 'ReadMe.md'
+      - 'docs/**'
+
+permissions:
+  contents: write
+
+env:
+  MANIFEST_PATH: BiakVisualStudioExtension/source.extension.vsixmanifest
+
+jobs:
+  build-and-release-preview:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore
+
+      - name: Set preview version
+        id: release_meta
+        shell: pwsh
+        run: |
+          $version = "0.0.${env:GITHUB_RUN_NUMBER}"
+          $releaseTag = "preview-$version"
+          $releaseName = "VSIX Preview $version"
+
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "release_tag=$releaseTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "release_name=$releaseName" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Set VSIX manifest version
+        shell: pwsh
+        run: |
+          [xml]$manifest = Get-Content -Path "${env:MANIFEST_PATH}"
+          $namespaceUri = "http://schemas.microsoft.com/developer/vsx-schema/2011"
+          $ns = New-Object System.Xml.XmlNamespaceManager($manifest.NameTable)
+          $ns.AddNamespace("vsx", $namespaceUri)
+
+          $identity = $manifest.SelectSingleNode("/vsx:PackageManifest/vsx:Metadata/vsx:Identity", $ns)
+          if (-not $identity) { throw "Identity node not found in VSIX manifest." }
+          $identity.SetAttribute("Version", "${{ steps.release_meta.outputs.version }}")
+          $identity.SetAttribute("Id", "$($identity.GetAttribute('Id')).Preview")
+
+          $displayName = $manifest.SelectSingleNode("/vsx:PackageManifest/vsx:Metadata/vsx:DisplayName", $ns)
+          if (-not $displayName) { throw "DisplayName node not found in VSIX manifest." }
+          $displayName.InnerText = "$($displayName.InnerText) Preview"
+
+          $preview = $manifest.SelectSingleNode("/vsx:PackageManifest/vsx:Metadata/vsx:Preview", $ns)
+          if (-not $preview) {
+            $metadata = $manifest.SelectSingleNode("/vsx:PackageManifest/vsx:Metadata", $ns)
+            if (-not $metadata) { throw "Metadata node not found in VSIX manifest." }
+            $preview = $manifest.CreateElement("Preview", $namespaceUri)
+            [void]$metadata.AppendChild($preview)
+          }
+          $preview.InnerText = "true"
+
+          $manifest.Save("${env:MANIFEST_PATH}")
+
+      - name: Build solution (Release)
+        run: msbuild biak-visual-studio-extension.slnx /p:Configuration=Release
+
+      - name: Locate VSIX output
+        id: vsix
+        shell: pwsh
+        run: |
+          $vsix = Get-ChildItem -Path "BiakVisualStudioExtension/bin/Release" -Filter "*.vsix" -Recurse |
+            Where-Object { $_.Name -notlike "*.vsixmanifest" } |
+            Select-Object -First 1
+          if (-not $vsix) { throw "VSIX package not found under BiakVisualStudioExtension/bin/Release." }
+          "path=$($vsix.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Create preview GitHub Release and upload VSIX
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_meta.outputs.release_tag }}
+          name: ${{ steps.release_meta.outputs.release_name }}
+          prerelease: true
+          generate_release_notes: true
+          files: ${{ steps.vsix.outputs.path }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -2,11 +2,12 @@
 // This file is licensed under the MIT License.
 // See the LICENSE file in the project root for full license information.
 
-using Microsoft.VisualStudio.Shell;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using BiakVisualStudioExtension.Commands;
+using Microsoft.VisualStudio.Shell;
 
 namespace BiakVisualStudioExtension;
 
@@ -29,12 +30,13 @@ namespace BiakVisualStudioExtension;
 /// </remarks>
 [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
 [Guid(PACKAGE_GUID_STRING)]
+[ProvideMenuResource("Menus.ctmenu", 1)]
 public sealed class BiakVisualStudioExtensionPackage : AsyncPackage
 {
     /// <summary>
     /// BiakVisualStudioExtensionPackage GUID string.
     /// </summary>
-    public const string PACKAGE_GUID_STRING = "852ea3c3-1ee7-4792-bd81-81bb6824e2cc";
+    private const string PACKAGE_GUID_STRING = "852ea3c3-1ee7-4792-bd81-81bb6824e2cc";
 
     #region Package Members
 
@@ -50,6 +52,9 @@ public sealed class BiakVisualStudioExtensionPackage : AsyncPackage
         // When initialized asynchronously, the current thread may be a background thread at this point.
         // Do any initialization that requires the UI thread after switching to the UI thread.
         await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+        await BiakCommand.InitializeAsync(this);
+        await EnableCommand.InitializeAsync(this);
+        await DisableCommand.InitializeAsync(this);
     }
 
     #endregion
