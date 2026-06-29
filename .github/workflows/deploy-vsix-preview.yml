@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - dev
+    paths-ignore:
+      - 'ReadMe.md'
+      - 'docs/**'
 
 permissions:
   contents: write
