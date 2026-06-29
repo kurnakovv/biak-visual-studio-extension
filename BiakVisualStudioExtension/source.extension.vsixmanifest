@@ -8,7 +8,7 @@
         <License>LICENSE</License>
         <Icon>docs/images/biak-preview-icon.png</Icon>
         <PreviewImage>docs/images/biak-preview-icon.png</PreviewImage>
-        <Tags>todo</Tags>
+        <Tags>biak;editorconfig;dotnet-tool;visual-studio</Tags>
         <Preview>false</Preview>
     </Metadata>
     <Installation>
