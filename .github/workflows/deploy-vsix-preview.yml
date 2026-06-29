@@ -68,7 +68,7 @@ jobs:
           $manifest.Save("${env:MANIFEST_PATH}")
 
       - name: Build solution (Release)
-        run: dotnet build BiakVisualStudioExtension.slnx --configuration Release
+        run: msbuild biak-visual-studio-extension.slnx /p:Configuration=Release
 
       - name: Locate VSIX output
         id: vsix
