@@ -47,7 +47,8 @@ internal sealed class EditorConfigVariantFilePathToContentTypeProvider
         }
 
         contentType =
-            _contentTypeRegistryService.GetContentType("editorconfig");
+            _contentTypeRegistryService.GetContentType(
+                EditorConfigVariantContentTypeDefinition.CONTENT_TYPE_NAME)!;
 
         Debug.WriteLine(
             $"!!! CONTENT TYPE: {contentType?.TypeName ?? "<null>"}");
