@@ -71,7 +71,7 @@ internal sealed class EditorConfigVariantSeverityWarningFormatDefinition : Class
     public EditorConfigVariantSeverityWarningFormatDefinition()
     {
         DisplayName = "biak editorconfig severity: warning";
-        ForegroundColor = Colors.Goldenrod;
+        ForegroundColor = Colors.LightGoldenrodYellow;
     }
 }
 
@@ -85,7 +85,7 @@ internal sealed class EditorConfigVariantSeveritySuggestionFormatDefinition : Cl
     public EditorConfigVariantSeveritySuggestionFormatDefinition()
     {
         DisplayName = "biak editorconfig severity: suggestion";
-        ForegroundColor = Colors.ForestGreen;
+        ForegroundColor = Colors.LightBlue;
     }
 }
 
