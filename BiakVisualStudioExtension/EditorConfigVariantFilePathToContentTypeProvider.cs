@@ -28,9 +28,9 @@ internal sealed class EditorConfigVariantFilePathToContentTypeProvider
 
     public bool TryGetContentTypeForFilePath(
         string filePath,
-        out IContentType contentType)
+        out IContentType? contentType)
     {
-        contentType = null!;
+        contentType = null;
 
         string fileName = Path.GetFileName(filePath);
 
