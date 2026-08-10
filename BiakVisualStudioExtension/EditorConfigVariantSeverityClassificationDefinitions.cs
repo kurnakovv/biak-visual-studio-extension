@@ -18,6 +18,7 @@ internal static class EditorConfigVariantSeverityClassificationDefinitions
     public const string NONE_CLASSIFICATION_TYPE_NAME = "biak.editorconfig-variant.severity.none";
     public const string SILENT_CLASSIFICATION_TYPE_NAME = "biak.editorconfig-variant.severity.silent";
 
+    // ReSharper disable UnassignedField.Global
 #pragma warning disable CS0169,IDE0051,IDE0044 // Used by MEF composition + MEF export field pattern
     [Export(typeof(ClassificationTypeDefinition))]
     [Name(KEY_CLASSIFICATION_TYPE_NAME)]
@@ -49,6 +50,7 @@ internal static class EditorConfigVariantSeverityClassificationDefinitions
     [BaseDefinition("text")]
     private static ClassificationTypeDefinition? s_silentClassificationTypeDefinition;
 #pragma warning restore CS0169,IDE0051,IDE0044
+    // ReSharper restore UnassignedField.Global
 }
 
 [Export(typeof(EditorFormatDefinition))]

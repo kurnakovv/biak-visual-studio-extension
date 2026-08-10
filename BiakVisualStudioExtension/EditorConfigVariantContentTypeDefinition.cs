@@ -11,10 +11,12 @@ internal static class EditorConfigVariantContentTypeDefinition
 {
     public const string CONTENT_TYPE_NAME = "biak.editorconfig-variant";
 
+    // ReSharper disable UnassignedField.Global
 #pragma warning disable CS0169,IDE0051,IDE0044 // Used by MEF composition + MEF export field pattern
     [Export]
     [Name(CONTENT_TYPE_NAME)]
     [BaseDefinition("text")]
     private static ContentTypeDefinition? s_contentTypeDefinition;
 #pragma warning restore CS0169,IDE0051,IDE0044
+    // ReSharper restore UnassignedField.Global
 }
