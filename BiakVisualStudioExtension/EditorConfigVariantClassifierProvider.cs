@@ -29,8 +29,7 @@ internal sealed class EditorConfigVariantClassifierProvider : ITaggerProvider
             throw new ArgumentNullException(nameof(buffer));
         }
 
-        return new EditorConfigVariantClassifier(
-            ClassificationTypeRegistryService) as ITagger<T>;
+        return new EditorConfigVariantClassifier(ClassificationTypeRegistryService) as ITagger<T>;
     }
 }
 
@@ -58,33 +57,43 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
         _commentType = classificationTypeRegistryService.GetClassificationType(
             PredefinedClassificationTypeNames.Comment);
+
         _keywordType = classificationTypeRegistryService.GetClassificationType(
             PredefinedClassificationTypeNames.Keyword);
+
         IClassificationType identifierType = classificationTypeRegistryService.GetClassificationType(
             PredefinedClassificationTypeNames.Identifier);
+
         _keyType = classificationTypeRegistryService.GetClassificationType(
             EditorConfigVariantSeverityClassificationDefinitions.KEY_CLASSIFICATION_TYPE_NAME)
             ?? identifierType;
+
         _operatorType = classificationTypeRegistryService.GetClassificationType(
             PredefinedClassificationTypeNames.Operator);
+
         _stringType = classificationTypeRegistryService.GetClassificationType(
             PredefinedClassificationTypeNames.String);
+
         _severityErrorType =
             classificationTypeRegistryService.GetClassificationType(
                 EditorConfigVariantSeverityClassificationDefinitions.ERROR_CLASSIFICATION_TYPE_NAME)
             ?? _stringType;
+
         _severityWarningType =
             classificationTypeRegistryService.GetClassificationType(
                 EditorConfigVariantSeverityClassificationDefinitions.WARNING_CLASSIFICATION_TYPE_NAME)
             ?? _stringType;
+
         _severitySuggestionType =
             classificationTypeRegistryService.GetClassificationType(
                 EditorConfigVariantSeverityClassificationDefinitions.SUGGESTION_CLASSIFICATION_TYPE_NAME)
             ?? _stringType;
+
         _severityNoneType =
             classificationTypeRegistryService.GetClassificationType(
                 EditorConfigVariantSeverityClassificationDefinitions.NONE_CLASSIFICATION_TYPE_NAME)
             ?? _stringType;
+
         _severitySilentType =
             classificationTypeRegistryService.GetClassificationType(
                 EditorConfigVariantSeverityClassificationDefinitions.SILENT_CLASSIFICATION_TYPE_NAME)

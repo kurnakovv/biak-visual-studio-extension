@@ -21,8 +21,7 @@ internal sealed class EditorConfigVariantFilePathToContentTypeProvider
     public EditorConfigVariantFilePathToContentTypeProvider(
         IContentTypeRegistryService contentTypeRegistryService)
     {
-        _contentTypeRegistryService =
-            contentTypeRegistryService
+        _contentTypeRegistryService = contentTypeRegistryService
             ?? throw new ArgumentNullException(nameof(contentTypeRegistryService));
     }
 
