@@ -18,8 +18,7 @@ internal static class EditorConfigVariantSeverityClassificationDefinitions
     public const string NONE_CLASSIFICATION_TYPE_NAME = "biak.editorconfig-variant.severity.none";
     public const string SILENT_CLASSIFICATION_TYPE_NAME = "biak.editorconfig-variant.severity.silent";
 
-#pragma warning disable IDE0051 // Used by MEF composition
-#pragma warning disable IDE0044 // MEF export field pattern
+#pragma warning disable CS0169,IDE0051,IDE0044 // Used by MEF composition + MEF export field pattern
     [Export(typeof(ClassificationTypeDefinition))]
     [Name(KEY_CLASSIFICATION_TYPE_NAME)]
     [BaseDefinition("text")]
@@ -49,8 +48,7 @@ internal static class EditorConfigVariantSeverityClassificationDefinitions
     [Name(SILENT_CLASSIFICATION_TYPE_NAME)]
     [BaseDefinition("text")]
     private static ClassificationTypeDefinition? s_silentClassificationTypeDefinition;
-#pragma warning restore IDE0044
-#pragma warning restore IDE0051
+#pragma warning restore CS0169,IDE0051,IDE0044
 }
 
 [Export(typeof(EditorFormatDefinition))]

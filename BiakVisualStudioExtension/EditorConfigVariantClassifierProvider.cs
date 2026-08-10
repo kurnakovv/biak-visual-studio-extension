@@ -92,7 +92,9 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
             ?? _stringType;
     }
 
+#pragma warning disable 67
     public event EventHandler<SnapshotSpanEventArgs>? TagsChanged;
+#pragma warning restore 67
 
     public IEnumerable<ITagSpan<ClassificationTag>> GetTags(
         NormalizedSnapshotSpanCollection spans)
