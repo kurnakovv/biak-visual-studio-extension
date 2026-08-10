@@ -29,7 +29,10 @@ internal sealed class EditorConfigVariantClassifierProvider : ITaggerProvider
             throw new ArgumentNullException(nameof(buffer));
         }
 
-        return new EditorConfigVariantClassifier(ClassificationTypeRegistryService) as ITagger<T>;
+        return buffer.Properties.GetOrCreateSingletonProperty(
+            () => new EditorConfigVariantClassifier(
+                buffer,
+                ClassificationTypeRegistryService)) as ITagger<T>;
     }
 }
 
@@ -47,13 +50,21 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
     private readonly IClassificationType _severitySilentType;
 
     public EditorConfigVariantClassifier(
+        ITextBuffer textBuffer,
         IClassificationTypeRegistryService classificationTypeRegistryService)
     {
+        if (textBuffer is null)
+        {
+            throw new ArgumentNullException(nameof(textBuffer));
+        }
+
         if (classificationTypeRegistryService is null)
         {
             throw new ArgumentNullException(
                 nameof(classificationTypeRegistryService));
         }
+
+        textBuffer.Changed += OnTextBufferChanged;
 
         _commentType = classificationTypeRegistryService.GetClassificationType(
             PredefinedClassificationTypeNames.Comment);
@@ -100,9 +111,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
             ?? _stringType;
     }
 
-#pragma warning disable 67
     public event EventHandler<SnapshotSpanEventArgs>? TagsChanged;
-#pragma warning restore 67
 
     public IEnumerable<ITagSpan<ClassificationTag>> GetTags(
         NormalizedSnapshotSpanCollection spans)
@@ -248,6 +257,19 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                     _commentType);
             }
         }
+    }
+
+    private void OnTextBufferChanged(
+        object? sender,
+        TextContentChangedEventArgs e)
+    {
+        if (e.Changes.Count == 0)
+        {
+            return;
+        }
+
+        SnapshotSpan fullSnapshotSpan = new(e.After, 0, e.After.Length);
+        TagsChanged?.Invoke(this, new SnapshotSpanEventArgs(fullSnapshotSpan));
     }
 
     private IClassificationType GetSeverityClassificationType(
