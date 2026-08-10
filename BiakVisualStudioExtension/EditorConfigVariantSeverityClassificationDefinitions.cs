@@ -11,6 +11,7 @@ namespace BiakVisualStudioExtension;
 
 internal static class EditorConfigVariantSeverityClassificationDefinitions
 {
+    public const string KEY_CLASSIFICATION_TYPE_NAME = "biak.editorconfig-variant.key";
     public const string ERROR_CLASSIFICATION_TYPE_NAME = "biak.editorconfig-variant.severity.error";
     public const string WARNING_CLASSIFICATION_TYPE_NAME = "biak.editorconfig-variant.severity.warning";
     public const string SUGGESTION_CLASSIFICATION_TYPE_NAME = "biak.editorconfig-variant.severity.suggestion";
@@ -19,6 +20,11 @@ internal static class EditorConfigVariantSeverityClassificationDefinitions
 
 #pragma warning disable IDE0051 // Used by MEF composition
 #pragma warning disable IDE0044 // MEF export field pattern
+    [Export(typeof(ClassificationTypeDefinition))]
+    [Name(KEY_CLASSIFICATION_TYPE_NAME)]
+    [BaseDefinition("text")]
+    private static ClassificationTypeDefinition? s_keyClassificationTypeDefinition;
+
     [Export(typeof(ClassificationTypeDefinition))]
     [Name(ERROR_CLASSIFICATION_TYPE_NAME)]
     [BaseDefinition("text")]
@@ -45,6 +51,20 @@ internal static class EditorConfigVariantSeverityClassificationDefinitions
     private static ClassificationTypeDefinition? s_silentClassificationTypeDefinition;
 #pragma warning restore IDE0044
 #pragma warning restore IDE0051
+}
+
+[Export(typeof(EditorFormatDefinition))]
+[ClassificationType(ClassificationTypeNames = EditorConfigVariantSeverityClassificationDefinitions.KEY_CLASSIFICATION_TYPE_NAME)]
+[Name(EditorConfigVariantSeverityClassificationDefinitions.KEY_CLASSIFICATION_TYPE_NAME)]
+[UserVisible(true)]
+[Order(Before = Priority.Default)]
+internal sealed class EditorConfigVariantKeyFormatDefinition : ClassificationFormatDefinition
+{
+    public EditorConfigVariantKeyFormatDefinition()
+    {
+        DisplayName = "biak editorconfig key";
+        ForegroundColor = Colors.Turquoise;
+    }
 }
 
 [Export(typeof(EditorFormatDefinition))]

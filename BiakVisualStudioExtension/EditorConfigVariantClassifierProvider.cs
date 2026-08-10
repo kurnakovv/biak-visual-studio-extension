@@ -39,6 +39,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
     private readonly IClassificationType _commentType;
     private readonly IClassificationType _keywordType;
     private readonly IClassificationType _identifierType;
+    private readonly IClassificationType _keyType;
     private readonly IClassificationType _operatorType;
     private readonly IClassificationType _stringType;
     private readonly IClassificationType _severityErrorType;
@@ -62,6 +63,9 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
             PredefinedClassificationTypeNames.Keyword);
         _identifierType = classificationTypeRegistryService.GetClassificationType(
             PredefinedClassificationTypeNames.Identifier);
+        _keyType = classificationTypeRegistryService.GetClassificationType(
+            EditorConfigVariantSeverityClassificationDefinitions.KEY_CLASSIFICATION_TYPE_NAME)
+            ?? _identifierType;
         _operatorType = classificationTypeRegistryService.GetClassificationType(
             PredefinedClassificationTypeNames.Operator);
         _stringType = classificationTypeRegistryService.GetClassificationType(
@@ -157,7 +161,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                     line,
                     keyStart,
                     keyEnd - keyStart + 1,
-                    _identifierType);
+                    _keyType);
             }
 
             yield return CreateTagSpan(
