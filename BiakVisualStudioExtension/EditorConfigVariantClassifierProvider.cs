@@ -154,15 +154,33 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                 continue;
             }
 
-            if (trimmedStart.StartsWith("[", StringComparison.Ordinal)
-                && trimmedStart.Contains("]", StringComparison.Ordinal))
+            if (trimmedStart.StartsWith("[", StringComparison.Ordinal))
             {
-                yield return CreateTagSpan(
-                    line,
-                    indent,
-                    trimmedStart.Length,
-                    _keywordType);
-                continue;
+                int sectionEndInTrimmed = trimmedStart.IndexOf(']');
+                if (sectionEndInTrimmed >= 0)
+                {
+                    int sectionLength = sectionEndInTrimmed + 1;
+                    yield return CreateTagSpan(
+                        line,
+                        indent,
+                        sectionLength,
+                        _keywordType);
+
+                    int sectionEndInLine = indent + sectionLength;
+                    int sectionCommentStart = FindInlineCommentStart(
+                        lineText,
+                        sectionEndInLine);
+                    if (sectionCommentStart >= 0)
+                    {
+                        yield return CreateTagSpan(
+                            line,
+                            sectionCommentStart,
+                            lineText.Length - sectionCommentStart,
+                            _commentType);
+                    }
+
+                    continue;
+                }
             }
 
             int equalsIndex = lineText.IndexOf('=');
