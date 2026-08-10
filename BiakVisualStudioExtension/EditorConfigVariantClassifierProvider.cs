@@ -248,9 +248,9 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
     private static bool IsSeverityKey(string keyText)
     {
-        return keyText.EndsWith(
-            ".severity",
-            StringComparison.OrdinalIgnoreCase);
+        return keyText.EndsWith(".severity", StringComparison.OrdinalIgnoreCase)
+            || (keyText.StartsWith("resharper_", StringComparison.OrdinalIgnoreCase)
+                && keyText.EndsWith("_highlighting", StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool TryGetTrimmedValueBounds(
