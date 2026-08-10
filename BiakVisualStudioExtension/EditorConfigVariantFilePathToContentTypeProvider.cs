@@ -4,7 +4,6 @@
 
 using System;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.IO;
 using Microsoft.VisualStudio.Utilities;
 
@@ -25,16 +24,12 @@ internal sealed class EditorConfigVariantFilePathToContentTypeProvider
         _contentTypeRegistryService =
             contentTypeRegistryService
             ?? throw new ArgumentNullException(nameof(contentTypeRegistryService));
-
-        Debug.WriteLine("!!! PROVIDER CREATED");
     }
 
     public bool TryGetContentTypeForFilePath(
         string filePath,
         out IContentType contentType)
     {
-        Debug.WriteLine($"!!! PROVIDER CALLED: {filePath}");
-
         contentType = null!;
 
         string fileName = Path.GetFileName(filePath);
@@ -46,12 +41,7 @@ internal sealed class EditorConfigVariantFilePathToContentTypeProvider
             return false;
         }
 
-        contentType =
-            _contentTypeRegistryService.GetContentType(
-                EditorConfigVariantContentTypeDefinition.CONTENT_TYPE_NAME)!;
-
-        Debug.WriteLine(
-            $"!!! CONTENT TYPE: {contentType?.TypeName ?? "<null>"}");
+        contentType = _contentTypeRegistryService.GetContentType(EditorConfigVariantContentTypeDefinition.CONTENT_TYPE_NAME);
 
         return contentType is not null;
     }
