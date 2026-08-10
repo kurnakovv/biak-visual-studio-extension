@@ -43,6 +43,6 @@ internal sealed class EditorConfigVariantFilePathToContentTypeProvider
 
         contentType = _contentTypeRegistryService.GetContentType(EditorConfigVariantContentTypeDefinition.CONTENT_TYPE_NAME);
 
-        return contentType is not null;
+        return true;
     }
 }
