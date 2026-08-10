@@ -112,9 +112,18 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
             yield break;
         }
 
+        int lastLineNumber = -1;
+
         foreach (SnapshotSpan span in spans)
         {
             ITextSnapshotLine line = span.Start.GetContainingLine();
+
+            if (line.LineNumber == lastLineNumber)
+            {
+                continue;
+            }
+            lastLineNumber = line.LineNumber;
+
             string lineText = line.GetText();
 
             if (string.IsNullOrWhiteSpace(lineText))
@@ -196,9 +205,9 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                 ? inlineCommentStart
                 : lineText.Length;
 
-            string keyText = lineText.Substring(
-                keyStart,
-                keyEnd - keyStart + 1);
+            string keyText = keyEnd >= keyStart
+                 ? lineText.Substring(keyStart, keyEnd - keyStart + 1)
+                 : string.Empty;
 
             if (valueEndExclusive > valueStart)
             {
