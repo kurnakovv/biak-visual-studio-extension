@@ -15,7 +15,12 @@ Visual Studio extension for [biak](https://github.com/kurnakovv/biak) tool 👁�
 
 ## 📺 Preview
 
-<kbd><img src="docs/images/preview_video.gif" alt="Extension preview" /></kbd>
+<kbd><img src="docs/images/preview_video.gif" alt="Extension preview" style="width: 800px; max-width: 100%;" /></kbd>
+<kbd><img src="docs/images/biak-editorconfig-highlighting-syntax.png" alt="Syntax highlighting preview" style="width: 800px; max-width: 100%;" /></kbd>
+
+## 💡 Features
+- ⚙️ Support for `biak` enable/disable commands.
+- 🎨 Syntax highlighting for `.editorconfig-*` files.
 
 ## 🧩 Supported versions
 * Visual Studio 2022
@@ -24,7 +29,7 @@ Visual Studio extension for [biak](https://github.com/kurnakovv/biak) tool 👁�
 ## 🚀 Installation
 1️⃣ Install [biak](https://github.com/kurnakovv/biak)
 
-2️⃣ Install the extension via Visual Studio Marketplace or via [GitHub releases](https://github.com/kurnakovv/biak-visual-studio-extension/releases)
+2️⃣ Install the extension via [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=kurnakovv.biak) or via [GitHub releases](https://github.com/kurnakovv/biak-visual-studio-extension/releases)
 
 3️⃣ Visual Studio: `View` -> `Toolbars` -> `biak`
 
