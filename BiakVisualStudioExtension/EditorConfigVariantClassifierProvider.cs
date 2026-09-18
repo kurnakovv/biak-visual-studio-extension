@@ -45,6 +45,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
     private readonly IClassificationType _biakMarkerType;
     private readonly IClassificationType _biakVarType;
     private readonly IClassificationType _biakImportType;
+    private readonly IClassificationType _biakAlwaysEnabledType;
     private readonly IClassificationType _biakIncludeType;
     private readonly IClassificationType _biakExcludeType;
     private readonly IClassificationType _biakStructuralType;
@@ -92,6 +93,10 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
         _biakImportType = classificationTypeRegistryService.GetClassificationType(
             EditorConfigVariantSeverityClassificationDefinitions.BIAK_IMPORT_CLASSIFICATION_TYPE_NAME)
+            ?? _keywordType;
+
+        _biakAlwaysEnabledType = classificationTypeRegistryService.GetClassificationType(
+            EditorConfigVariantSeverityClassificationDefinitions.BIAK_ALWAYS_ENABLED_CLASSIFICATION_TYPE_NAME)
             ?? _keywordType;
 
         _biakIncludeType = classificationTypeRegistryService.GetClassificationType(
@@ -167,6 +172,8 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
             spans[0].Snapshot);
         Dictionary<int, string> validatedIncludeExcludeLineKinds =
             GetValidatedIncludeExcludeLineKinds(spans[0].Snapshot);
+        Dictionary<int, string> validatedAlwaysEnabledLineKinds =
+            GetValidatedAlwaysEnabledLineKinds(spans[0].Snapshot);
 
         int lastLineNumber = -1;
         bool insideBiakVarExpression = false;
@@ -192,7 +199,8 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                 lineText,
                 line.LineNumber,
                 definedVariableNames,
-                validatedIncludeExcludeLineKinds);
+                validatedIncludeExcludeLineKinds,
+                validatedAlwaysEnabledLineKinds);
             foreach (BiakClassifiedSpan biakSpan in biakSpans)
             {
                 yield return CreateTagSpan(
@@ -517,7 +525,8 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         string lineText,
         int lineNumber,
         HashSet<string> definedVariableNames,
-        IReadOnlyDictionary<int, string> validatedIncludeExcludeLineKinds)
+        IReadOnlyDictionary<int, string> validatedIncludeExcludeLineKinds,
+        IReadOnlyDictionary<int, string> validatedAlwaysEnabledLineKinds)
     {
         List<BiakClassifiedSpan> spans = [];
         int searchStart = 0;
@@ -563,6 +572,10 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                         validatedIncludeExcludeLineKinds.TryGetValue(
                             lineNumber,
                             out string? includeExcludeLineKind);
+                    bool hasValidatedAlwaysEnabledKind =
+                        validatedAlwaysEnabledLineKinds.TryGetValue(
+                            lineNumber,
+                            out string? alwaysEnabledLineKind);
 
                     if (IsBiakVarToken(directiveToken))
                     {
@@ -593,6 +606,36 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                             tokenLength,
                             _biakImportType));
                     }
+                    else if (IsBiakAlwaysEnabledToken(directiveToken)
+                             && hasValidatedAlwaysEnabledKind)
+                    {
+                        spans.Add(new BiakClassifiedSpan(
+                            markerStart,
+                            BIAK_MARKER_TOKEN.Length,
+                            _biakMarkerType));
+
+                        spans.Add(new BiakClassifiedSpan(
+                            tokenStart,
+                            tokenLength,
+                            _biakAlwaysEnabledType));
+
+                        if (string.Equals(alwaysEnabledLineKind, "start", StringComparison.Ordinal))
+                        {
+                            TryAddStructuralTokenSpan(
+                                lineText,
+                                tokenEnd,
+                                spans,
+                                "start");
+                        }
+                        else if (string.Equals(alwaysEnabledLineKind, "end", StringComparison.Ordinal))
+                        {
+                            TryAddStructuralTokenSpan(
+                                lineText,
+                                tokenEnd,
+                                spans,
+                                "end");
+                        }
+                    }
                     else if (IsBiakIncludeToken(directiveToken)
                              && hasValidatedIncludeExcludeKind
                              && string.Equals(includeExcludeLineKind, "include", StringComparison.Ordinal))
@@ -606,6 +649,11 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                             tokenStart,
                             tokenLength,
                             _biakIncludeType));
+
+                        TryAddBracketedStringSpan(
+                            lineText,
+                            tokenEnd,
+                            spans);
                     }
                     else if (IsBiakExcludeToken(directiveToken)
                              && hasValidatedIncludeExcludeKind
@@ -620,6 +668,11 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                             tokenStart,
                             tokenLength,
                             _biakExcludeType));
+
+                        TryAddBracketedStringSpan(
+                            lineText,
+                            tokenEnd,
+                            spans);
                     }
                     else if (IsBiakStructuralToken(directiveToken)
                              && hasValidatedIncludeExcludeKind
@@ -706,6 +759,31 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         return lineKinds;
     }
 
+    private static Dictionary<int, string> GetValidatedAlwaysEnabledLineKinds(
+        ITextSnapshot snapshot)
+    {
+        Dictionary<int, string> lineKinds = [];
+
+        for (int lineIndex = 0; lineIndex < snapshot.LineCount; lineIndex++)
+        {
+            if (!IsValidAlwaysEnabledBoundaryLine(snapshot.GetLineFromLineNumber(lineIndex).GetText(), "start"))
+            {
+                continue;
+            }
+
+            if (!TryGetAlwaysEnabledEndLineNumber(snapshot, lineIndex + 1, out int endLineNumber))
+            {
+                continue;
+            }
+
+            lineKinds[lineIndex] = "start";
+            lineKinds[endLineNumber] = "end";
+            lineIndex = endLineNumber;
+        }
+
+        return lineKinds;
+    }
+
     private static bool TryGetNextNonBlankLineNumber(
         ITextSnapshot snapshot,
         int startLineNumber,
@@ -736,6 +814,26 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
              currentLineNumber++)
         {
             if (IsValidIncludeExcludeEndLine(snapshot.GetLineFromLineNumber(currentLineNumber).GetText()))
+            {
+                lineNumber = currentLineNumber;
+                return true;
+            }
+        }
+
+        lineNumber = -1;
+        return false;
+    }
+
+    private static bool TryGetAlwaysEnabledEndLineNumber(
+        ITextSnapshot snapshot,
+        int startLineNumber,
+        out int lineNumber)
+    {
+        for (int currentLineNumber = startLineNumber;
+             currentLineNumber < snapshot.LineCount;
+             currentLineNumber++)
+        {
+            if (IsValidAlwaysEnabledBoundaryLine(snapshot.GetLineFromLineNumber(currentLineNumber).GetText(), "end"))
             {
                 lineNumber = currentLineNumber;
                 return true;
@@ -797,6 +895,38 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         }
 
         for (int i = pairStart + "include/exclude".Length; i < lineText.Length; i++)
+        {
+            if (!char.IsWhiteSpace(lineText[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsValidAlwaysEnabledBoundaryLine(
+        string lineText,
+        string expectedBoundary)
+    {
+        if (!TryGetBiakDirectiveToken(lineText, 0, out _, out string directiveToken, out int directiveTokenEnd)
+            || !directiveToken.Equals("always-enabled", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        int boundaryStart = SkipWhitespace(lineText, directiveTokenEnd);
+        if (!TryReadToken(
+            lineText,
+            boundaryStart,
+            out string boundaryToken,
+            out int boundaryEnd)
+            || !boundaryToken.Equals(expectedBoundary, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        for (int i = boundaryEnd; i < lineText.Length; i++)
         {
             if (!char.IsWhiteSpace(lineText[i]))
             {
@@ -961,6 +1091,11 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         return directiveToken.Equals("import", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool IsBiakAlwaysEnabledToken(string directiveToken)
+    {
+        return directiveToken.Equals("always-enabled", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool IsBiakIncludeToken(string directiveToken)
     {
         return directiveToken.Equals("include", StringComparison.OrdinalIgnoreCase);
@@ -1109,6 +1244,60 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
             tokenStart + "include/".Length,
             "exclude".Length,
             _biakExcludeType));
+    }
+
+    private void TryAddBracketedStringSpan(
+        string lineText,
+        int directiveEndExclusive,
+        ICollection<BiakClassifiedSpan> spans)
+    {
+        int bracketStart = SkipWhitespace(lineText, directiveEndExclusive);
+        if (bracketStart >= lineText.Length || lineText[bracketStart] != '[')
+        {
+            return;
+        }
+
+        int closingBracket = lineText.LastIndexOf(']');
+        if (closingBracket <= bracketStart)
+        {
+            return;
+        }
+
+        spans.Add(new BiakClassifiedSpan(
+            bracketStart,
+            closingBracket - bracketStart + 1,
+            _keywordType));
+    }
+
+    private void TryAddStructuralTokenSpan(
+        string lineText,
+        int directiveEndExclusive,
+        ICollection<BiakClassifiedSpan> spans,
+        params string[] allowedTokens)
+    {
+        int tokenStart = SkipWhitespace(lineText, directiveEndExclusive);
+        if (!TryReadToken(
+            lineText,
+            tokenStart,
+            out string structuralToken,
+            out _))
+        {
+            return;
+        }
+
+        foreach (string allowedToken in allowedTokens)
+        {
+            if (!structuralToken.Equals(allowedToken, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            spans.Add(new BiakClassifiedSpan(
+                tokenStart,
+                structuralToken.Length,
+                _biakStructuralType));
+            return;
+        }
     }
 
     private bool HasBiakVarDirectiveToken(IReadOnlyList<BiakClassifiedSpan> biakSpans)

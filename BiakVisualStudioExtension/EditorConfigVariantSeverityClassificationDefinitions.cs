@@ -14,6 +14,7 @@ internal static class EditorConfigVariantSeverityClassificationDefinitions
     public const string BIAK_MARKER_CLASSIFICATION_TYPE_NAME = "biak.editorconfig-variant.biak-marker";
     public const string BIAK_VAR_CLASSIFICATION_TYPE_NAME = "biak.editorconfig-variant.biak-var";
     public const string BIAK_IMPORT_CLASSIFICATION_TYPE_NAME = "biak.editorconfig-variant.biak-import";
+    public const string BIAK_ALWAYS_ENABLED_CLASSIFICATION_TYPE_NAME = "biak.editorconfig-variant.biak-always-enabled";
     public const string BIAK_INCLUDE_CLASSIFICATION_TYPE_NAME = "biak.editorconfig-variant.biak-include";
     public const string BIAK_EXCLUDE_CLASSIFICATION_TYPE_NAME = "biak.editorconfig-variant.biak-exclude";
     public const string BIAK_STRUCTURAL_CLASSIFICATION_TYPE_NAME = "biak.editorconfig-variant.biak-structural";
@@ -42,6 +43,11 @@ internal static class EditorConfigVariantSeverityClassificationDefinitions
     [Name(BIAK_IMPORT_CLASSIFICATION_TYPE_NAME)]
     [BaseDefinition("text")]
     private static ClassificationTypeDefinition? s_biakImportClassificationTypeDefinition;
+
+    [Export(typeof(ClassificationTypeDefinition))]
+    [Name(BIAK_ALWAYS_ENABLED_CLASSIFICATION_TYPE_NAME)]
+    [BaseDefinition("text")]
+    private static ClassificationTypeDefinition? s_biakAlwaysEnabledClassificationTypeDefinition;
 
     [Export(typeof(ClassificationTypeDefinition))]
     [Name(BIAK_INCLUDE_CLASSIFICATION_TYPE_NAME)]
@@ -141,6 +147,20 @@ internal sealed class EditorConfigVariantBiakImportFormatDefinition : Classifica
     {
         DisplayName = "biak directive: import";
         ForegroundColor = Color.FromRgb(197, 134, 192);
+    }
+}
+
+[Export(typeof(EditorFormatDefinition))]
+[ClassificationType(ClassificationTypeNames = EditorConfigVariantSeverityClassificationDefinitions.BIAK_ALWAYS_ENABLED_CLASSIFICATION_TYPE_NAME)]
+[Name(EditorConfigVariantSeverityClassificationDefinitions.BIAK_ALWAYS_ENABLED_CLASSIFICATION_TYPE_NAME)]
+[UserVisible(true)]
+[Order(Before = Priority.Default)]
+internal sealed class EditorConfigVariantBiakAlwaysEnabledFormatDefinition : ClassificationFormatDefinition
+{
+    public EditorConfigVariantBiakAlwaysEnabledFormatDefinition()
+    {
+        DisplayName = "biak directive: always-enabled";
+        ForegroundColor = Color.FromRgb(220, 140, 60);
     }
 }
 
