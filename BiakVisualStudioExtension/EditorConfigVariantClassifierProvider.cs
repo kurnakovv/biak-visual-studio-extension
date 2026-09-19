@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using BiakVisualStudioExtension.Constants;
 using Microsoft.VisualStudio.Language.StandardClassification;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
@@ -587,7 +588,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                             lineNumber,
                             out string? alwaysEnabledLineKind);
 
-                    if (directiveToken == BiakDirectiveTokens.VAR)
+                    if (directiveToken == BiakDirectiveTokenConstant.VAR)
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
@@ -604,7 +605,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                             tokenEnd,
                             spans);
                     }
-                    else if (directiveToken == BiakDirectiveTokens.IMPORT)
+                    else if (directiveToken == BiakDirectiveTokenConstant.IMPORT)
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
@@ -616,7 +617,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                             tokenLength,
                             _biakImportType));
                     }
-                    else if (directiveToken == BiakDirectiveTokens.ALWAYS_ENABLED
+                    else if (directiveToken == BiakDirectiveTokenConstant.ALWAYS_ENABLED
                              && hasValidatedAlwaysEnabledKind)
                     {
                         spans.Add(new BiakClassifiedSpan(
@@ -646,9 +647,9 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                                 "end");
                         }
                     }
-                    else if (directiveToken == BiakDirectiveTokens.INCLUDE
+                    else if (directiveToken == BiakDirectiveTokenConstant.INCLUDE
                              && hasValidatedIncludeExcludeKind
-                             && string.Equals(includeExcludeLineKind, BiakDirectiveTokens.INCLUDE, StringComparison.Ordinal))
+                             && includeExcludeLineKind == BiakDirectiveTokenConstant.INCLUDE)
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
@@ -665,9 +666,9 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                             tokenEnd,
                             spans);
                     }
-                    else if (directiveToken == BiakDirectiveTokens.EXCLUDE
+                    else if (directiveToken == BiakDirectiveTokenConstant.EXCLUDE
                              && hasValidatedIncludeExcludeKind
-                             && includeExcludeLineKind == BiakDirectiveTokens.EXCLUDE)
+                             && includeExcludeLineKind == BiakDirectiveTokenConstant.EXCLUDE)
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
@@ -748,20 +749,20 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
         for (int lineIndex = 0; lineIndex < snapshot.LineCount; lineIndex++)
         {
-            if (!TryMatchIncludeExcludeDirectiveLine(snapshot.GetLineFromLineNumber(lineIndex).GetText(), BiakDirectiveTokens.INCLUDE))
+            if (!TryMatchIncludeExcludeDirectiveLine(snapshot.GetLineFromLineNumber(lineIndex).GetText(), BiakDirectiveTokenConstant.INCLUDE))
             {
                 continue;
             }
 
             if (!TryGetNextNonBlankLineNumber(snapshot, lineIndex + 1, out int excludeLineNumber)
-                || !TryMatchIncludeExcludeDirectiveLine(snapshot.GetLineFromLineNumber(excludeLineNumber).GetText(), BiakDirectiveTokens.EXCLUDE)
+                || !TryMatchIncludeExcludeDirectiveLine(snapshot.GetLineFromLineNumber(excludeLineNumber).GetText(), BiakDirectiveTokenConstant.EXCLUDE)
                 || !TryGetIncludeExcludeEndLineNumber(snapshot, excludeLineNumber + 1, out int endLineNumber))
             {
                 continue;
             }
 
-            lineKinds[lineIndex] = BiakDirectiveTokens.INCLUDE;
-            lineKinds[excludeLineNumber] = BiakDirectiveTokens.EXCLUDE;
+            lineKinds[lineIndex] = BiakDirectiveTokenConstant.INCLUDE;
+            lineKinds[excludeLineNumber] = BiakDirectiveTokenConstant.EXCLUDE;
             lineKinds[endLineNumber] = "END";
             lineIndex = endLineNumber;
         }
@@ -895,12 +896,12 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         }
 
         int pairStart = SkipWhitespace(lineText, directiveTokenEnd);
-        if (lineText.IndexOf(BiakDirectiveTokens.INCLUDE_EXCLUDE_PAIR, pairStart, StringComparison.Ordinal) != pairStart)
+        if (lineText.IndexOf(BiakDirectiveTokenConstant.INCLUDE_EXCLUDE_PAIR, pairStart, StringComparison.Ordinal) != pairStart)
         {
             return false;
         }
 
-        for (int i = pairStart + BiakDirectiveTokens.INCLUDE_EXCLUDE_PAIR.Length; i < lineText.Length; i++)
+        for (int i = pairStart + BiakDirectiveTokenConstant.INCLUDE_EXCLUDE_PAIR.Length; i < lineText.Length; i++)
         {
             if (!char.IsWhiteSpace(lineText[i]))
             {
@@ -916,7 +917,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         string expectedBoundary)
     {
         if (!TryGetBiakDirectiveToken(lineText, 0, out _, out string directiveToken, out int directiveTokenEnd)
-            || directiveToken != BiakDirectiveTokens.ALWAYS_ENABLED)
+            || directiveToken != BiakDirectiveTokenConstant.ALWAYS_ENABLED)
         {
             return false;
         }
@@ -954,7 +955,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                 return null;
             }
 
-            if (directiveToken == BiakDirectiveTokens.VAR)
+            if (directiveToken == BiakDirectiveTokenConstant.VAR)
             {
                 int variableTokenStart = SkipWhitespace(lineText, directiveTokenEnd);
                 if (TryReadToken(
@@ -985,7 +986,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         commentStart = -1;
 
         if (!TryGetBiakDirectiveToken(lineText, 0, out _, out string directiveToken, out int directiveTokenEnd)
-            || directiveToken != BiakDirectiveTokens.IMPORT)
+            || directiveToken != BiakDirectiveTokenConstant.IMPORT)
         {
             return false;
         }
@@ -1204,19 +1205,19 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
             return;
         }
 
-        if (lineText.IndexOf(BiakDirectiveTokens.INCLUDE_EXCLUDE_PAIR, tokenStart, StringComparison.OrdinalIgnoreCase) != tokenStart)
+        if (lineText.IndexOf(BiakDirectiveTokenConstant.INCLUDE_EXCLUDE_PAIR, tokenStart, StringComparison.OrdinalIgnoreCase) != tokenStart)
         {
             return;
         }
 
         spans.Add(new BiakClassifiedSpan(
             tokenStart,
-            BiakDirectiveTokens.INCLUDE.Length,
+            BiakDirectiveTokenConstant.INCLUDE.Length,
             _biakIncludeType));
 
         spans.Add(new BiakClassifiedSpan(
-            tokenStart + BiakDirectiveTokens.INCLUDE.Length + 1,
-            BiakDirectiveTokens.EXCLUDE.Length,
+            tokenStart + BiakDirectiveTokenConstant.INCLUDE.Length + 1,
+            BiakDirectiveTokenConstant.EXCLUDE.Length,
             _biakExcludeType));
     }
 
