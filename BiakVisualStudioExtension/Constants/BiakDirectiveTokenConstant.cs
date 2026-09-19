@@ -6,6 +6,7 @@ namespace BiakVisualStudioExtension.Constants;
 
 internal class BiakDirectiveTokenConstant
 {
+    public const string BIAK_MARKER_TOKEN = "^biak^";
     public const string VAR = "var";
     public const string IMPORT = "import";
     public const string ALWAYS_ENABLED = "always-enabled";

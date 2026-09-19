@@ -39,8 +39,6 @@ internal sealed class EditorConfigVariantClassifierProvider : ITaggerProvider
 
 internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 {
-    private const string BIAK_MARKER_TOKEN = "^biak^";
-
     private readonly IClassificationType _commentType;
     private readonly IClassificationType _keywordType;
     private readonly IClassificationType _biakMarkerType;
@@ -550,7 +548,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         while (searchStart < lineText.Length)
         {
             int markerStart = lineText.IndexOf(
-                BIAK_MARKER_TOKEN,
+                BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN,
                 searchStart,
                 StringComparison.Ordinal);
 
@@ -559,7 +557,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                 break;
             }
 
-            int tokenStart = markerStart + BIAK_MARKER_TOKEN.Length;
+            int tokenStart = markerStart + BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length;
             while (tokenStart < lineText.Length
                 && char.IsWhiteSpace(lineText[tokenStart]))
             {
@@ -592,7 +590,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
-                            BIAK_MARKER_TOKEN.Length,
+                            BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length,
                             _biakMarkerType));
 
                         spans.Add(new BiakClassifiedSpan(
@@ -609,7 +607,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
-                            BIAK_MARKER_TOKEN.Length,
+                            BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length,
                             _biakMarkerType));
 
                         spans.Add(new BiakClassifiedSpan(
@@ -622,7 +620,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
-                            BIAK_MARKER_TOKEN.Length,
+                            BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length,
                             _biakMarkerType));
 
                         spans.Add(new BiakClassifiedSpan(
@@ -653,7 +651,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
-                            BIAK_MARKER_TOKEN.Length,
+                            BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length,
                             _biakMarkerType));
 
                         spans.Add(new BiakClassifiedSpan(
@@ -672,7 +670,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
-                            BIAK_MARKER_TOKEN.Length,
+                            BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length,
                             _biakMarkerType));
 
                         spans.Add(new BiakClassifiedSpan(
@@ -691,7 +689,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
-                            BIAK_MARKER_TOKEN.Length,
+                            BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length,
                             _biakMarkerType));
 
                         spans.Add(new BiakClassifiedSpan(
@@ -708,7 +706,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
-                            BIAK_MARKER_TOKEN.Length,
+                            BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length,
                             _biakMarkerType));
 
                         spans.Add(new BiakClassifiedSpan(
@@ -719,7 +717,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                 }
             }
 
-            searchStart = markerStart + BIAK_MARKER_TOKEN.Length;
+            searchStart = markerStart + BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length;
         }
 
         spans.Sort(static (left, right) => left.StartOffset.CompareTo(right.StartOffset));
@@ -969,7 +967,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                 }
             }
 
-            searchStart = markerStart + BIAK_MARKER_TOKEN.Length;
+            searchStart = markerStart + BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length;
         }
 
         return null;
@@ -1019,7 +1017,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         out int directiveTokenEnd)
     {
         markerStart = lineText.IndexOf(
-            BIAK_MARKER_TOKEN,
+            BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN,
             searchStart,
             StringComparison.Ordinal);
         directiveToken = string.Empty;
@@ -1032,7 +1030,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
         int directiveTokenStart = SkipWhitespace(
             lineText,
-            markerStart + BIAK_MARKER_TOKEN.Length);
+            markerStart + BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length);
         return TryReadToken(
             lineText,
             directiveTokenStart,
