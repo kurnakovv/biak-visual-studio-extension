@@ -799,19 +799,11 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         int startLineNumber,
         out int lineNumber)
     {
-        for (int currentLineNumber = startLineNumber;
-             currentLineNumber < snapshot.LineCount;
-             currentLineNumber++)
-        {
-            if (!string.IsNullOrWhiteSpace(snapshot.GetLineFromLineNumber(currentLineNumber).GetText()))
-            {
-                lineNumber = currentLineNumber;
-                return true;
-            }
-        }
-
-        lineNumber = -1;
-        return false;
+        return TryFindLineNumber(
+            snapshot,
+            startLineNumber,
+            lineText => !string.IsNullOrWhiteSpace(lineText),
+            out lineNumber);
     }
 
     private static bool TryGetIncludeExcludeEndLineNumber(
@@ -819,19 +811,11 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         int startLineNumber,
         out int lineNumber)
     {
-        for (int currentLineNumber = startLineNumber;
-             currentLineNumber < snapshot.LineCount;
-             currentLineNumber++)
-        {
-            if (IsValidIncludeExcludeEndLine(snapshot.GetLineFromLineNumber(currentLineNumber).GetText()))
-            {
-                lineNumber = currentLineNumber;
-                return true;
-            }
-        }
-
-        lineNumber = -1;
-        return false;
+        return TryFindLineNumber(
+            snapshot,
+            startLineNumber,
+            IsValidIncludeExcludeEndLine,
+            out lineNumber);
     }
 
     private static bool TryGetAlwaysEnabledEndLineNumber(
@@ -839,11 +823,23 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         int startLineNumber,
         out int lineNumber)
     {
-        for (int currentLineNumber = startLineNumber;
-             currentLineNumber < snapshot.LineCount;
-             currentLineNumber++)
+        return TryFindLineNumber(
+            snapshot,
+            startLineNumber,
+            lineText => IsValidAlwaysEnabledBoundaryLine(lineText, "end"),
+            out lineNumber);
+    }
+
+    private static bool TryFindLineNumber(
+        ITextSnapshot snapshot,
+        int startLineNumber,
+        Func<string, bool> predicate,
+        out int lineNumber)
+    {
+        for (int currentLineNumber = startLineNumber; currentLineNumber < snapshot.LineCount; currentLineNumber++)
         {
-            if (IsValidAlwaysEnabledBoundaryLine(snapshot.GetLineFromLineNumber(currentLineNumber).GetText(), "end"))
+            string lineText = snapshot.GetLineFromLineNumber(currentLineNumber).GetText();
+            if (predicate(lineText))
             {
                 lineNumber = currentLineNumber;
                 return true;
