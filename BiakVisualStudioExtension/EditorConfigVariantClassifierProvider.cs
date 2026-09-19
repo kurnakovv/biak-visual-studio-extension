@@ -216,10 +216,11 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                     && !insideBiakVarExpression
                     && !looksLikeBiakVarContinuation))
             {
-                IEnumerable<TagSpan<ClassificationTag>> commentSpans = CreateCommentTagSpansExcludingBiak(
+                IEnumerable<TagSpan<ClassificationTag>> commentSpans = CreateTagSpansExcludingBiak(
                     line,
                     indent,
                     trimmedStart.Length,
+                    _commentType,
                     biakSpans
                 );
                 foreach (TagSpan<ClassificationTag> commentSpan in commentSpans)
@@ -254,10 +255,11 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                         sectionEndInLine);
                     if (sectionCommentStart >= 0)
                     {
-                        IEnumerable<TagSpan<ClassificationTag>> commentSpans = CreateCommentTagSpansExcludingBiak(
+                        IEnumerable<TagSpan<ClassificationTag>> commentSpans = CreateTagSpansExcludingBiak(
                             line,
                             sectionCommentStart,
                             lineText.Length - sectionCommentStart,
+                            _commentType,
                             biakSpans
                         );
                         foreach (TagSpan<ClassificationTag> commentSpan in commentSpans)
@@ -283,10 +285,11 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
                     if (importCommentStart >= 0)
                     {
-                        IEnumerable<TagSpan<ClassificationTag>> commentSpans = CreateCommentTagSpansExcludingBiak(
+                        IEnumerable<TagSpan<ClassificationTag>> commentSpans = CreateTagSpansExcludingBiak(
                             line,
                             importCommentStart,
                             lineText.Length - importCommentStart,
+                            _commentType,
                             biakSpans
                         );
                         foreach (TagSpan<ClassificationTag> commentSpan in commentSpans)
@@ -338,10 +341,11 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
                 if (continuationCommentStart >= 0)
                 {
-                    IEnumerable<TagSpan<ClassificationTag>> commentSpans = CreateCommentTagSpansExcludingBiak(
+                    IEnumerable<TagSpan<ClassificationTag>> commentSpans = CreateTagSpansExcludingBiak(
                         line,
                         continuationCommentStart,
                         lineText.Length - continuationCommentStart,
+                        _commentType,
                         biakSpans
                     );
                     foreach (TagSpan<ClassificationTag> commentSpan in commentSpans)
@@ -478,10 +482,11 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
             if (inlineCommentStart >= 0)
             {
-                IEnumerable<TagSpan<ClassificationTag>> commentSpans = CreateCommentTagSpansExcludingBiak(
+                IEnumerable<TagSpan<ClassificationTag>> commentSpans = CreateTagSpansExcludingBiak(
                     line,
                     inlineCommentStart,
                     lineText.Length - inlineCommentStart,
+                    _commentType,
                     biakSpans
                 );
                 foreach (TagSpan<ClassificationTag> commentSpan in commentSpans)
@@ -1389,20 +1394,6 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         }
 
         return slashCount % 2 == 1;
-    }
-
-    private IEnumerable<TagSpan<ClassificationTag>> CreateCommentTagSpansExcludingBiak(
-        ITextSnapshotLine line,
-        int commentStart,
-        int commentLength,
-        IReadOnlyList<BiakClassifiedSpan> biakSpans)
-    {
-        return CreateTagSpansExcludingBiak(
-            line,
-            commentStart,
-            commentLength,
-            _commentType,
-            biakSpans);
     }
 
     private static IEnumerable<TagSpan<ClassificationTag>> CreateTagSpansExcludingBiak(
