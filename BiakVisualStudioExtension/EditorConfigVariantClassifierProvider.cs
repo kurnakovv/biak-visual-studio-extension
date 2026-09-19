@@ -587,7 +587,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                             lineNumber,
                             out string? alwaysEnabledLineKind);
 
-                    if (IsBiakVarToken(directiveToken))
+                    if (directiveToken == BiakDirectiveTokens.VAR)
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
@@ -604,7 +604,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                             tokenEnd,
                             spans);
                     }
-                    else if (IsBiakImportToken(directiveToken))
+                    else if (directiveToken == BiakDirectiveTokens.IMPORT)
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
@@ -616,7 +616,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                             tokenLength,
                             _biakImportType));
                     }
-                    else if (IsBiakAlwaysEnabledToken(directiveToken)
+                    else if (directiveToken == BiakDirectiveTokens.ALWAYS_ENABLED
                              && hasValidatedAlwaysEnabledKind)
                     {
                         spans.Add(new BiakClassifiedSpan(
@@ -646,9 +646,9 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                                 "end");
                         }
                     }
-                    else if (IsBiakIncludeToken(directiveToken)
+                    else if (directiveToken == BiakDirectiveTokens.INCLUDE
                              && hasValidatedIncludeExcludeKind
-                             && string.Equals(includeExcludeLineKind, "include", StringComparison.Ordinal))
+                             && string.Equals(includeExcludeLineKind, BiakDirectiveTokens.INCLUDE, StringComparison.Ordinal))
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
@@ -665,9 +665,9 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                             tokenEnd,
                             spans);
                     }
-                    else if (IsBiakExcludeToken(directiveToken)
+                    else if (directiveToken == BiakDirectiveTokens.EXCLUDE
                              && hasValidatedIncludeExcludeKind
-                             && string.Equals(includeExcludeLineKind, "exclude", StringComparison.Ordinal))
+                             && includeExcludeLineKind == BiakDirectiveTokens.EXCLUDE)
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
@@ -748,20 +748,20 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
         for (int lineIndex = 0; lineIndex < snapshot.LineCount; lineIndex++)
         {
-            if (!TryMatchIncludeExcludeDirectiveLine(snapshot.GetLineFromLineNumber(lineIndex).GetText(), "include"))
+            if (!TryMatchIncludeExcludeDirectiveLine(snapshot.GetLineFromLineNumber(lineIndex).GetText(), BiakDirectiveTokens.INCLUDE))
             {
                 continue;
             }
 
             if (!TryGetNextNonBlankLineNumber(snapshot, lineIndex + 1, out int excludeLineNumber)
-                || !TryMatchIncludeExcludeDirectiveLine(snapshot.GetLineFromLineNumber(excludeLineNumber).GetText(), "exclude")
+                || !TryMatchIncludeExcludeDirectiveLine(snapshot.GetLineFromLineNumber(excludeLineNumber).GetText(), BiakDirectiveTokens.EXCLUDE)
                 || !TryGetIncludeExcludeEndLineNumber(snapshot, excludeLineNumber + 1, out int endLineNumber))
             {
                 continue;
             }
 
-            lineKinds[lineIndex] = "include";
-            lineKinds[excludeLineNumber] = "exclude";
+            lineKinds[lineIndex] = BiakDirectiveTokens.INCLUDE;
+            lineKinds[excludeLineNumber] = BiakDirectiveTokens.EXCLUDE;
             lineKinds[endLineNumber] = "END";
             lineIndex = endLineNumber;
         }
@@ -895,12 +895,12 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         }
 
         int pairStart = SkipWhitespace(lineText, directiveTokenEnd);
-        if (lineText.IndexOf("include/exclude", pairStart, StringComparison.Ordinal) != pairStart)
+        if (lineText.IndexOf(BiakDirectiveTokens.INCLUDE_EXCLUDE_PAIR, pairStart, StringComparison.Ordinal) != pairStart)
         {
             return false;
         }
 
-        for (int i = pairStart + "include/exclude".Length; i < lineText.Length; i++)
+        for (int i = pairStart + BiakDirectiveTokens.INCLUDE_EXCLUDE_PAIR.Length; i < lineText.Length; i++)
         {
             if (!char.IsWhiteSpace(lineText[i]))
             {
@@ -916,7 +916,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         string expectedBoundary)
     {
         if (!TryGetBiakDirectiveToken(lineText, 0, out _, out string directiveToken, out int directiveTokenEnd)
-            || !directiveToken.Equals("always-enabled", StringComparison.Ordinal))
+            || directiveToken != BiakDirectiveTokens.ALWAYS_ENABLED)
         {
             return false;
         }
@@ -954,7 +954,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                 return null;
             }
 
-            if (IsBiakVarToken(directiveToken))
+            if (directiveToken == BiakDirectiveTokens.VAR)
             {
                 int variableTokenStart = SkipWhitespace(lineText, directiveTokenEnd);
                 if (TryReadToken(
@@ -985,7 +985,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         commentStart = -1;
 
         if (!TryGetBiakDirectiveToken(lineText, 0, out _, out string directiveToken, out int directiveTokenEnd)
-            || !IsBiakImportToken(directiveToken))
+            || directiveToken != BiakDirectiveTokens.IMPORT)
         {
             return false;
         }
@@ -1085,31 +1085,6 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                 _biakVariableNameType));
             i = variableNameEnd - 1;
         }
-    }
-
-    private static bool IsBiakVarToken(string directiveToken)
-    {
-        return directiveToken.Equals("var", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsBiakImportToken(string directiveToken)
-    {
-        return directiveToken.Equals("import", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsBiakAlwaysEnabledToken(string directiveToken)
-    {
-        return directiveToken.Equals("always-enabled", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsBiakIncludeToken(string directiveToken)
-    {
-        return directiveToken.Equals("include", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsBiakExcludeToken(string directiveToken)
-    {
-        return directiveToken.Equals("exclude", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsBiakStructuralToken(string directiveToken)
@@ -1229,20 +1204,19 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
             return;
         }
 
-        const string INCLUDE_EXCLUDE_PAIR_TOKEN = "include/exclude";
-        if (lineText.IndexOf(INCLUDE_EXCLUDE_PAIR_TOKEN, tokenStart, StringComparison.OrdinalIgnoreCase) != tokenStart)
+        if (lineText.IndexOf(BiakDirectiveTokens.INCLUDE_EXCLUDE_PAIR, tokenStart, StringComparison.OrdinalIgnoreCase) != tokenStart)
         {
             return;
         }
 
         spans.Add(new BiakClassifiedSpan(
             tokenStart,
-            "include".Length,
+            BiakDirectiveTokens.INCLUDE.Length,
             _biakIncludeType));
 
         spans.Add(new BiakClassifiedSpan(
-            tokenStart + "include/".Length,
-            "exclude".Length,
+            tokenStart + BiakDirectiveTokens.INCLUDE.Length + 1,
+            BiakDirectiveTokens.EXCLUDE.Length,
             _biakExcludeType));
     }
 
