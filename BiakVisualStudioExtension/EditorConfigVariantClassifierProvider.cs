@@ -216,12 +216,13 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                     && !insideBiakVarExpression
                     && !looksLikeBiakVarContinuation))
             {
-                foreach (TagSpan<ClassificationTag> commentSpan in
-                         CreateCommentTagSpansExcludingBiak(
-                             line,
-                             indent,
-                             trimmedStart.Length,
-                             biakSpans))
+                IEnumerable<TagSpan<ClassificationTag>> commentSpans = CreateCommentTagSpansExcludingBiak(
+                    line,
+                    indent,
+                    trimmedStart.Length,
+                    biakSpans
+                );
+                foreach (TagSpan<ClassificationTag> commentSpan in commentSpans)
                 {
                     yield return commentSpan;
                 }
@@ -235,13 +236,14 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                 if (sectionEndInTrimmed >= 0)
                 {
                     int sectionLength = sectionEndInTrimmed + 1;
-                    foreach (TagSpan<ClassificationTag> sectionSpan in
-                             CreateTagSpansExcludingBiak(
-                                 line,
-                                 indent,
-                                 sectionLength,
-                                 _keywordType,
-                                 biakSpans))
+                    IEnumerable<TagSpan<ClassificationTag>> sectionSpans = CreateTagSpansExcludingBiak(
+                        line,
+                        indent,
+                        sectionLength,
+                        _keywordType,
+                        biakSpans
+                    );
+                    foreach (TagSpan<ClassificationTag> sectionSpan in sectionSpans)
                     {
                         yield return sectionSpan;
                     }
@@ -252,12 +254,13 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                         sectionEndInLine);
                     if (sectionCommentStart >= 0)
                     {
-                        foreach (TagSpan<ClassificationTag> commentSpan in
-                                 CreateCommentTagSpansExcludingBiak(
-                                     line,
-                                     sectionCommentStart,
-                                     lineText.Length - sectionCommentStart,
-                                     biakSpans))
+                        IEnumerable<TagSpan<ClassificationTag>> commentSpans = CreateCommentTagSpansExcludingBiak(
+                            line,
+                            sectionCommentStart,
+                            lineText.Length - sectionCommentStart,
+                            biakSpans
+                        );
+                        foreach (TagSpan<ClassificationTag> commentSpan in commentSpans)
                         {
                             yield return commentSpan;
                         }
@@ -280,12 +283,13 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
                     if (importCommentStart >= 0)
                     {
-                        foreach (TagSpan<ClassificationTag> commentSpan in
-                                 CreateCommentTagSpansExcludingBiak(
-                                     line,
-                                     importCommentStart,
-                                     lineText.Length - importCommentStart,
-                                     biakSpans))
+                        IEnumerable<TagSpan<ClassificationTag>> commentSpans = CreateCommentTagSpansExcludingBiak(
+                            line,
+                            importCommentStart,
+                            lineText.Length - importCommentStart,
+                            biakSpans
+                        );
+                        foreach (TagSpan<ClassificationTag> commentSpan in commentSpans)
                         {
                             yield return commentSpan;
                         }
@@ -334,12 +338,13 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
                 if (continuationCommentStart >= 0)
                 {
-                    foreach (TagSpan<ClassificationTag> commentSpan in
-                             CreateCommentTagSpansExcludingBiak(
-                                 line,
-                                 continuationCommentStart,
-                                 lineText.Length - continuationCommentStart,
-                                 biakSpans))
+                    IEnumerable<TagSpan<ClassificationTag>> commentSpans = CreateCommentTagSpansExcludingBiak(
+                        line,
+                        continuationCommentStart,
+                        lineText.Length - continuationCommentStart,
+                        biakSpans
+                    );
+                    foreach (TagSpan<ClassificationTag> commentSpan in commentSpans)
                     {
                         yield return commentSpan;
                     }
@@ -362,13 +367,14 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
             if (keyEnd >= keyStart)
             {
-                foreach (TagSpan<ClassificationTag> keySpan in
-                         CreateTagSpansExcludingBiak(
-                             line,
-                             keyStart,
-                             keyEnd - keyStart + 1,
-                             _keyType,
-                             biakSpans))
+                IEnumerable<TagSpan<ClassificationTag>> keySpans = CreateTagSpansExcludingBiak(
+                    line,
+                    keyStart,
+                    keyEnd - keyStart + 1,
+                    _keyType,
+                    biakSpans
+                );
+                foreach (TagSpan<ClassificationTag> keySpan in keySpans)
                 {
                     yield return keySpan;
                 }
@@ -456,13 +462,14 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                 }
                 else
                 {
-                    foreach (TagSpan<ClassificationTag> valueSpan in
-                             CreateTagSpansExcludingBiak(
-                                 line,
-                                 valueStart,
-                                 valueEndExclusive - valueStart,
-                                 _stringType,
-                                 biakSpans))
+                    IEnumerable<TagSpan<ClassificationTag>> valueSpans = CreateTagSpansExcludingBiak(
+                        line,
+                        valueStart,
+                        valueEndExclusive - valueStart,
+                        _stringType,
+                        biakSpans
+                    );
+                    foreach (TagSpan<ClassificationTag> valueSpan in valueSpans)
                     {
                         yield return valueSpan;
                     }
@@ -471,12 +478,13 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
             if (inlineCommentStart >= 0)
             {
-                foreach (TagSpan<ClassificationTag> commentSpan in
-                         CreateCommentTagSpansExcludingBiak(
-                             line,
-                             inlineCommentStart,
-                             lineText.Length - inlineCommentStart,
-                             biakSpans))
+                IEnumerable<TagSpan<ClassificationTag>> commentSpans = CreateCommentTagSpansExcludingBiak(
+                    line,
+                    inlineCommentStart,
+                    lineText.Length - inlineCommentStart,
+                    biakSpans
+                );
+                foreach (TagSpan<ClassificationTag> commentSpan in commentSpans)
                 {
                     yield return commentSpan;
                 }
