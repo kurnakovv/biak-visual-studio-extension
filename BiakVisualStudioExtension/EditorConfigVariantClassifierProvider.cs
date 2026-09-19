@@ -168,12 +168,9 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
             yield break;
         }
 
-        HashSet<string> definedVariableNames = GetDefinedBiakVariableNames(
-            spans[0].Snapshot);
-        Dictionary<int, string> validatedIncludeExcludeLineKinds =
-            GetValidatedIncludeExcludeLineKinds(spans[0].Snapshot);
-        Dictionary<int, string> validatedAlwaysEnabledLineKinds =
-            GetValidatedAlwaysEnabledLineKinds(spans[0].Snapshot);
+        HashSet<string> definedVariableNames = GetDefinedBiakVariableNames(spans[0].Snapshot);
+        Dictionary<int, string> validatedIncludeExcludeLineKinds = GetValidatedIncludeExcludeLineKinds(spans[0].Snapshot);
+        Dictionary<int, string> validatedAlwaysEnabledLineKinds = GetValidatedAlwaysEnabledLineKinds(spans[0].Snapshot);
 
         int lastLineNumber = -1;
         bool insideBiakVarExpression = false;
