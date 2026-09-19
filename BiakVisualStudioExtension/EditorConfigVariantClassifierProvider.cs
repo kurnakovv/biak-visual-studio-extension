@@ -703,7 +703,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                             tokenEnd,
                             spans);
                     }
-                    else if (IsBiakBaselineToken(directiveToken))
+                    else if (directiveToken is "inspectcode-baseline" or "warnings-baseline")
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
@@ -1220,12 +1220,6 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
             variableStart,
             variableName.Length,
             _biakVariableNameType));
-    }
-
-    private static bool IsBiakBaselineToken(string directiveToken)
-    {
-        return directiveToken.Equals("*-baseline", StringComparison.OrdinalIgnoreCase)
-            || directiveToken.EndsWith("-baseline", StringComparison.OrdinalIgnoreCase);
     }
 
     private void TryAddIncludeExcludePairSpan(
