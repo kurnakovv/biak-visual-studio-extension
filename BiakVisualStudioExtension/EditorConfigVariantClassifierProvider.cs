@@ -628,21 +628,21 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                             tokenLength,
                             _biakAlwaysEnabledType));
 
-                        if (string.Equals(alwaysEnabledLineKind, "start", StringComparison.Ordinal))
+                        if (string.Equals(alwaysEnabledLineKind, BiakSyntaxTokenConstant.ALWAYS_ENABLED_START, StringComparison.Ordinal))
                         {
                             TryAddStructuralTokenSpan(
                                 lineText,
                                 tokenEnd,
                                 spans,
-                                "start");
+                                BiakSyntaxTokenConstant.ALWAYS_ENABLED_START);
                         }
-                        else if (string.Equals(alwaysEnabledLineKind, "end", StringComparison.Ordinal))
+                        else if (string.Equals(alwaysEnabledLineKind, BiakSyntaxTokenConstant.ALWAYS_ENABLED_END, StringComparison.Ordinal))
                         {
                             TryAddStructuralTokenSpan(
                                 lineText,
                                 tokenEnd,
                                 spans,
-                                "end");
+                                BiakSyntaxTokenConstant.ALWAYS_ENABLED_END);
                         }
                     }
                     else if (directiveToken == BiakDirectiveTokenConstant.INCLUDE
@@ -685,7 +685,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                     }
                     else if (IsBiakStructuralToken(directiveToken)
                              && hasValidatedIncludeExcludeKind
-                             && string.Equals(includeExcludeLineKind, "END", StringComparison.Ordinal))
+                             && string.Equals(includeExcludeLineKind, BiakSyntaxTokenConstant.INCLUDE_EXCLUDE_END, StringComparison.Ordinal))
                     {
                         spans.Add(new BiakClassifiedSpan(
                             markerStart,
@@ -775,7 +775,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
         for (int lineIndex = 0; lineIndex < snapshot.LineCount; lineIndex++)
         {
-            if (!IsValidAlwaysEnabledBoundaryLine(snapshot.GetLineFromLineNumber(lineIndex).GetText(), "start"))
+            if (!IsValidAlwaysEnabledBoundaryLine(snapshot.GetLineFromLineNumber(lineIndex).GetText(), BiakSyntaxTokenConstant.ALWAYS_ENABLED_START))
             {
                 continue;
             }
@@ -785,8 +785,8 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
                 continue;
             }
 
-            lineKinds[lineIndex] = "start";
-            lineKinds[endLineNumber] = "end";
+            lineKinds[lineIndex] = BiakSyntaxTokenConstant.ALWAYS_ENABLED_START;
+            lineKinds[endLineNumber] = BiakSyntaxTokenConstant.ALWAYS_ENABLED_END;
             lineIndex = endLineNumber;
         }
 
@@ -825,7 +825,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
         return TryFindLineNumber(
             snapshot,
             startLineNumber,
-            lineText => IsValidAlwaysEnabledBoundaryLine(lineText, "end"),
+            lineText => IsValidAlwaysEnabledBoundaryLine(lineText, BiakSyntaxTokenConstant.ALWAYS_ENABLED_END),
             out lineNumber);
     }
 
@@ -888,7 +888,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
     private static bool IsValidIncludeExcludeEndLine(string lineText)
     {
         if (!TryGetBiakDirectiveToken(lineText, 0, out _, out string directiveToken, out int directiveTokenEnd)
-            || !directiveToken.Equals("END", StringComparison.Ordinal))
+            || !directiveToken.Equals(BiakSyntaxTokenConstant.INCLUDE_EXCLUDE_END, StringComparison.Ordinal))
         {
             return false;
         }
@@ -1088,7 +1088,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
     private static bool IsBiakStructuralToken(string directiveToken)
     {
-        return directiveToken.Equals("END", StringComparison.OrdinalIgnoreCase);
+        return directiveToken.Equals(BiakSyntaxTokenConstant.INCLUDE_EXCLUDE_END, StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool LooksLikeBiakVarContinuation(string trimmedStart)
