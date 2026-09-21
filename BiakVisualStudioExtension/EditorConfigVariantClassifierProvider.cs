@@ -761,7 +761,7 @@ internal sealed class EditorConfigVariantClassifier : ITagger<ClassificationTag>
 
             lineKinds[lineIndex] = BiakDirectiveTokenConstant.INCLUDE;
             lineKinds[excludeLineNumber] = BiakDirectiveTokenConstant.EXCLUDE;
-            lineKinds[endLineNumber] = "END";
+            lineKinds[endLineNumber] = BiakSyntaxTokenConstant.INCLUDE_EXCLUDE_END;
             lineIndex = endLineNumber;
         }
 
