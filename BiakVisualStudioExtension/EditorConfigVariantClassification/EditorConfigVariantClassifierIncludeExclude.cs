@@ -5,64 +5,11 @@
 using System;
 using System.Collections.Generic;
 using BiakVisualStudioExtension.Constants;
-using Microsoft.VisualStudio.Text;
 
 namespace BiakVisualStudioExtension.EditorConfigVariantClassification;
 
 internal sealed partial class EditorConfigVariantClassifier
 {
-    private static Dictionary<int, string> GetValidatedIncludeExcludeLineKinds(
-        ITextSnapshot snapshot)
-    {
-        Dictionary<int, string> lineKinds = [];
-
-        for (int lineIndex = 0; lineIndex < snapshot.LineCount; lineIndex++)
-        {
-            if (!TryMatchIncludeExcludeDirectiveLine(snapshot.GetLineFromLineNumber(lineIndex).GetText(), BiakDirectiveTokenConstant.INCLUDE))
-            {
-                continue;
-            }
-
-            if (!TryGetNextNonBlankLineNumber(snapshot, lineIndex + 1, out int excludeLineNumber)
-                || !TryMatchIncludeExcludeDirectiveLine(snapshot.GetLineFromLineNumber(excludeLineNumber).GetText(), BiakDirectiveTokenConstant.EXCLUDE)
-                || !TryGetIncludeExcludeEndLineNumber(snapshot, excludeLineNumber + 1, out int endLineNumber))
-            {
-                continue;
-            }
-
-            lineKinds[lineIndex] = BiakDirectiveTokenConstant.INCLUDE;
-            lineKinds[excludeLineNumber] = BiakDirectiveTokenConstant.EXCLUDE;
-            lineKinds[endLineNumber] = BiakSyntaxTokenConstant.INCLUDE_EXCLUDE_END;
-            lineIndex = endLineNumber;
-        }
-
-        return lineKinds;
-    }
-
-    private static bool TryGetNextNonBlankLineNumber(
-        ITextSnapshot snapshot,
-        int startLineNumber,
-        out int lineNumber)
-    {
-        return TryFindLineNumber(
-            snapshot,
-            startLineNumber,
-            lineText => !string.IsNullOrWhiteSpace(lineText),
-            out lineNumber);
-    }
-
-    private static bool TryGetIncludeExcludeEndLineNumber(
-        ITextSnapshot snapshot,
-        int startLineNumber,
-        out int lineNumber)
-    {
-        return TryFindLineNumber(
-            snapshot,
-            startLineNumber,
-            IsValidIncludeExcludeEndLine,
-            out lineNumber);
-    }
-
     private static bool TryMatchIncludeExcludeDirectiveLine(
         string lineText,
         string expectedDirective)

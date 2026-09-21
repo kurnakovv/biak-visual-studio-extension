@@ -5,28 +5,11 @@
 using System;
 using System.Collections.Generic;
 using BiakVisualStudioExtension.Constants;
-using Microsoft.VisualStudio.Text;
 
 namespace BiakVisualStudioExtension.EditorConfigVariantClassification;
 
 internal sealed partial class EditorConfigVariantClassifier
 {
-    private HashSet<string> GetDefinedBiakVariableNames(ITextSnapshot snapshot)
-    {
-        HashSet<string> variableNames = new(StringComparer.OrdinalIgnoreCase);
-
-        foreach (ITextSnapshotLine line in snapshot.Lines)
-        {
-            string? variableName = TryGetDefinedBiakVariableName(line.GetText());
-            if (!string.IsNullOrEmpty(variableName))
-            {
-                variableNames.Add(variableName!);
-            }
-        }
-
-        return variableNames;
-    }
-
     private static string? TryGetDefinedBiakVariableName(string lineText)
     {
         int searchStart = 0;

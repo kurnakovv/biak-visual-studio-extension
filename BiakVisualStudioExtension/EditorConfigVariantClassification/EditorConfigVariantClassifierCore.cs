@@ -33,6 +33,8 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
     private readonly IClassificationType _severitySuggestionType;
     private readonly IClassificationType _severityNoneType;
     private readonly IClassificationType _severitySilentType;
+    private readonly object _analysisGate = new();
+    private SnapshotAnalysis? _cachedSnapshotAnalysis;
 
     public EditorConfigVariantClassifier(
         ITextBuffer textBuffer,
@@ -142,9 +144,10 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
             yield break;
         }
 
-        HashSet<string> definedVariableNames = GetDefinedBiakVariableNames(spans[0].Snapshot);
-        Dictionary<int, string> validatedIncludeExcludeLineKinds = GetValidatedIncludeExcludeLineKinds(spans[0].Snapshot);
-        Dictionary<int, string> validatedAlwaysEnabledLineKinds = GetValidatedAlwaysEnabledLineKinds(spans[0].Snapshot);
+        SnapshotAnalysis snapshotAnalysis = GetSnapshotAnalysis(spans[0].Snapshot);
+        HashSet<string> definedVariableNames = snapshotAnalysis.DefinedVariableNames;
+        Dictionary<int, string> validatedIncludeExcludeLineKinds = snapshotAnalysis.ValidatedIncludeExcludeLineKinds;
+        Dictionary<int, string> validatedAlwaysEnabledLineKinds = snapshotAnalysis.ValidatedAlwaysEnabledLineKinds;
 
         int lastLineNumber = -1;
         bool insideBiakVarExpression = false;
@@ -471,6 +474,95 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
         }
     }
 
+    private SnapshotAnalysis GetSnapshotAnalysis(ITextSnapshot snapshot)
+    {
+        lock (_analysisGate)
+        {
+            if (_cachedSnapshotAnalysis is not null
+                && ReferenceEquals(_cachedSnapshotAnalysis.Snapshot, snapshot))
+            {
+                return _cachedSnapshotAnalysis;
+            }
+
+            _cachedSnapshotAnalysis = BuildSnapshotAnalysis(snapshot);
+            return _cachedSnapshotAnalysis;
+        }
+    }
+
+    private static SnapshotAnalysis BuildSnapshotAnalysis(ITextSnapshot snapshot)
+    {
+        HashSet<string> definedVariableNames = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<int, string> validatedIncludeExcludeLineKinds = [];
+        Dictionary<int, string> validatedAlwaysEnabledLineKinds = [];
+
+        int pendingIncludeLineNumber = -1;
+        int pendingExcludeLineNumber = -1;
+        int pendingAlwaysEnabledStartLineNumber = -1;
+
+        for (int lineIndex = 0; lineIndex < snapshot.LineCount; lineIndex++)
+        {
+            string lineText = snapshot.GetLineFromLineNumber(lineIndex).GetText();
+
+            string? variableName = TryGetDefinedBiakVariableName(lineText);
+            if (!string.IsNullOrEmpty(variableName))
+            {
+                definedVariableNames.Add(variableName!);
+            }
+
+            if (pendingExcludeLineNumber >= 0)
+            {
+                if (IsValidIncludeExcludeEndLine(lineText))
+                {
+                    validatedIncludeExcludeLineKinds[pendingIncludeLineNumber] = BiakDirectiveTokenConstant.INCLUDE;
+                    validatedIncludeExcludeLineKinds[pendingExcludeLineNumber] = BiakDirectiveTokenConstant.EXCLUDE;
+                    validatedIncludeExcludeLineKinds[lineIndex] = BiakSyntaxTokenConstant.INCLUDE_EXCLUDE_END;
+                    pendingIncludeLineNumber = -1;
+                    pendingExcludeLineNumber = -1;
+                }
+            }
+            else if (pendingIncludeLineNumber >= 0)
+            {
+                if (!string.IsNullOrWhiteSpace(lineText))
+                {
+                    if (TryMatchIncludeExcludeDirectiveLine(lineText, BiakDirectiveTokenConstant.EXCLUDE))
+                    {
+                        pendingExcludeLineNumber = lineIndex;
+                    }
+                    else
+                    {
+                        pendingIncludeLineNumber = TryMatchIncludeExcludeDirectiveLine(lineText, BiakDirectiveTokenConstant.INCLUDE)
+                            ? lineIndex
+                            : -1;
+                    }
+                }
+            }
+            else if (TryMatchIncludeExcludeDirectiveLine(lineText, BiakDirectiveTokenConstant.INCLUDE))
+            {
+                pendingIncludeLineNumber = lineIndex;
+            }
+
+            if (pendingAlwaysEnabledStartLineNumber >= 0)
+            {
+                if (IsValidAlwaysEnabledBoundaryLine(lineText, BiakSyntaxTokenConstant.ALWAYS_ENABLED_END))
+                {
+                    validatedAlwaysEnabledLineKinds[pendingAlwaysEnabledStartLineNumber] = BiakSyntaxTokenConstant.ALWAYS_ENABLED_START;
+                    validatedAlwaysEnabledLineKinds[lineIndex] = BiakSyntaxTokenConstant.ALWAYS_ENABLED_END;
+                    pendingAlwaysEnabledStartLineNumber = -1;
+                }
+            }
+            else if (IsValidAlwaysEnabledBoundaryLine(lineText, BiakSyntaxTokenConstant.ALWAYS_ENABLED_START))
+            {
+                pendingAlwaysEnabledStartLineNumber = lineIndex;
+            }
+        }
+
+        return new SnapshotAnalysis(
+            snapshot,
+            definedVariableNames,
+            validatedIncludeExcludeLineKinds,
+            validatedAlwaysEnabledLineKinds);
+    }
+
     private void OnTextBufferChanged(
         object? sender,
         TextContentChangedEventArgs e)
@@ -478,6 +570,11 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
         if (e.Changes.Count == 0)
         {
             return;
+        }
+
+        lock (_analysisGate)
+        {
+            _cachedSnapshotAnalysis = null;
         }
 
         SnapshotSpan fullSnapshotSpan = new(e.After, 0, e.After.Length);
@@ -611,5 +708,28 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
 
         spans.Sort(static (left, right) => left.StartOffset.CompareTo(right.StartOffset));
         return spans;
+    }
+
+    private sealed class SnapshotAnalysis
+    {
+        public SnapshotAnalysis(
+            ITextSnapshot snapshot,
+            HashSet<string> definedVariableNames,
+            Dictionary<int, string> validatedIncludeExcludeLineKinds,
+            Dictionary<int, string> validatedAlwaysEnabledLineKinds)
+        {
+            Snapshot = snapshot;
+            DefinedVariableNames = definedVariableNames;
+            ValidatedIncludeExcludeLineKinds = validatedIncludeExcludeLineKinds;
+            ValidatedAlwaysEnabledLineKinds = validatedAlwaysEnabledLineKinds;
+        }
+
+        public ITextSnapshot Snapshot { get; }
+
+        public HashSet<string> DefinedVariableNames { get; }
+
+        public Dictionary<int, string> ValidatedIncludeExcludeLineKinds { get; }
+
+        public Dictionary<int, string> ValidatedAlwaysEnabledLineKinds { get; }
     }
 }

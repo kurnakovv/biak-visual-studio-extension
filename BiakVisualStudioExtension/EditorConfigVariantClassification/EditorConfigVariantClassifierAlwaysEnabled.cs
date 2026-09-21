@@ -5,49 +5,11 @@
 using System;
 using System.Collections.Generic;
 using BiakVisualStudioExtension.Constants;
-using Microsoft.VisualStudio.Text;
 
 namespace BiakVisualStudioExtension.EditorConfigVariantClassification;
 
 internal sealed partial class EditorConfigVariantClassifier
 {
-    private static Dictionary<int, string> GetValidatedAlwaysEnabledLineKinds(
-        ITextSnapshot snapshot)
-    {
-        Dictionary<int, string> lineKinds = [];
-
-        for (int lineIndex = 0; lineIndex < snapshot.LineCount; lineIndex++)
-        {
-            if (!IsValidAlwaysEnabledBoundaryLine(snapshot.GetLineFromLineNumber(lineIndex).GetText(), BiakSyntaxTokenConstant.ALWAYS_ENABLED_START))
-            {
-                continue;
-            }
-
-            if (!TryGetAlwaysEnabledEndLineNumber(snapshot, lineIndex + 1, out int endLineNumber))
-            {
-                continue;
-            }
-
-            lineKinds[lineIndex] = BiakSyntaxTokenConstant.ALWAYS_ENABLED_START;
-            lineKinds[endLineNumber] = BiakSyntaxTokenConstant.ALWAYS_ENABLED_END;
-            lineIndex = endLineNumber;
-        }
-
-        return lineKinds;
-    }
-
-    private static bool TryGetAlwaysEnabledEndLineNumber(
-        ITextSnapshot snapshot,
-        int startLineNumber,
-        out int lineNumber)
-    {
-        return TryFindLineNumber(
-            snapshot,
-            startLineNumber,
-            lineText => IsValidAlwaysEnabledBoundaryLine(lineText, BiakSyntaxTokenConstant.ALWAYS_ENABLED_END),
-            out lineNumber);
-    }
-
     private static bool IsValidAlwaysEnabledBoundaryLine(
         string lineText,
         string expectedBoundary)

@@ -13,26 +13,6 @@ namespace BiakVisualStudioExtension.EditorConfigVariantClassification;
 
 internal sealed partial class EditorConfigVariantClassifier
 {
-    private static bool TryFindLineNumber(
-        ITextSnapshot snapshot,
-        int startLineNumber,
-        Func<string, bool> predicate,
-        out int lineNumber)
-    {
-        for (int currentLineNumber = startLineNumber; currentLineNumber < snapshot.LineCount; currentLineNumber++)
-        {
-            string lineText = snapshot.GetLineFromLineNumber(currentLineNumber).GetText();
-            if (predicate(lineText))
-            {
-                lineNumber = currentLineNumber;
-                return true;
-            }
-        }
-
-        lineNumber = -1;
-        return false;
-    }
-
     private static bool TryGetBiakDirectiveToken(
         string lineText,
         int searchStart,
