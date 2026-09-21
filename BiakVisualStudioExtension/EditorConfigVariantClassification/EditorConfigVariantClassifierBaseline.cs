@@ -9,7 +9,7 @@ namespace BiakVisualStudioExtension.EditorConfigVariantClassification;
 
 internal sealed partial class EditorConfigVariantClassifier
 {
-    private bool TryAddBaselineDirectiveSpans(
+    private void TryAddBaselineDirectiveSpans(
         string directiveToken,
         int markerStart,
         int tokenStart,
@@ -18,7 +18,7 @@ internal sealed partial class EditorConfigVariantClassifier
     {
         if (directiveToken is not ("inspectcode-baseline" or "warnings-baseline"))
         {
-            return false;
+            return;
         }
 
         spans.Add(new BiakClassifiedSpan(
@@ -30,7 +30,5 @@ internal sealed partial class EditorConfigVariantClassifier
             tokenStart,
             tokenLength,
             _biakBaselineType));
-
-        return true;
     }
 }
