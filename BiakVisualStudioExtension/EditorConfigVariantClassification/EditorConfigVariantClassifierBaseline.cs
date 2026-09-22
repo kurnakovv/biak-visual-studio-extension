@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using BiakVisualStudioExtension.Constants;
 
 namespace BiakVisualStudioExtension.EditorConfigVariantClassification;
 
@@ -11,7 +10,6 @@ internal sealed partial class EditorConfigVariantClassifier
 {
     private void TryAddBaselineDirectiveSpans(
         string directiveToken,
-        int markerStart,
         int tokenStart,
         int tokenLength,
         ICollection<BiakClassifiedSpan> spans)
@@ -20,11 +18,6 @@ internal sealed partial class EditorConfigVariantClassifier
         {
             return;
         }
-
-        spans.Add(new BiakClassifiedSpan(
-            markerStart,
-            BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length,
-            _biakMarkerType));
 
         spans.Add(new BiakClassifiedSpan(
             tokenStart,

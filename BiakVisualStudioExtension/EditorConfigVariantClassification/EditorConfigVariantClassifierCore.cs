@@ -546,6 +546,11 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
                 break;
             }
 
+            spans.Add(new BiakClassifiedSpan(
+                markerStart,
+                BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length,
+                _biakMarkerType));
+
             int tokenStart = markerStart + BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length;
             while (tokenStart < lineText.Length
                 && char.IsWhiteSpace(lineText[tokenStart]))
@@ -578,21 +583,18 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
                     if (!TryAddVariableDirectiveSpans(
                         lineText,
                         directiveToken,
-                        markerStart,
                         tokenStart,
                         tokenEnd,
                         tokenLength,
                         spans)
                         && !TryAddImportDirectiveSpans(
                             directiveToken,
-                            markerStart,
                             tokenStart,
                             tokenLength,
                             spans)
                         && !TryAddAlwaysEnabledDirectiveSpans(
                             lineText,
                             directiveToken,
-                            markerStart,
                             tokenStart,
                             tokenEnd,
                             tokenLength,
@@ -602,7 +604,6 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
                         && !TryAddIncludeExcludeDirectiveSpans(
                             lineText,
                             directiveToken,
-                            markerStart,
                             tokenStart,
                             tokenEnd,
                             tokenLength,
@@ -612,7 +613,6 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
                     {
                         TryAddBaselineDirectiveSpans(
                             directiveToken,
-                            markerStart,
                             tokenStart,
                             tokenLength,
                             spans);

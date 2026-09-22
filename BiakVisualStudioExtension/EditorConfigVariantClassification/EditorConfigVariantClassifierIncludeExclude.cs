@@ -129,7 +129,6 @@ internal sealed partial class EditorConfigVariantClassifier
     private bool TryAddIncludeExcludeDirectiveSpans(
         string lineText,
         string directiveToken,
-        int markerStart,
         int tokenStart,
         int tokenEnd,
         int tokenLength,
@@ -141,11 +140,6 @@ internal sealed partial class EditorConfigVariantClassifier
             && hasValidatedIncludeExcludeKind
             && includeExcludeLineKind == BiakDirectiveTokenConstant.INCLUDE)
         {
-            spans.Add(new BiakClassifiedSpan(
-                markerStart,
-                BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length,
-                _biakMarkerType));
-
             spans.Add(new BiakClassifiedSpan(
                 tokenStart,
                 tokenLength,
@@ -163,11 +157,6 @@ internal sealed partial class EditorConfigVariantClassifier
             && includeExcludeLineKind == BiakDirectiveTokenConstant.EXCLUDE)
         {
             spans.Add(new BiakClassifiedSpan(
-                markerStart,
-                BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length,
-                _biakMarkerType));
-
-            spans.Add(new BiakClassifiedSpan(
                 tokenStart,
                 tokenLength,
                 _biakExcludeType));
@@ -183,11 +172,6 @@ internal sealed partial class EditorConfigVariantClassifier
             && hasValidatedIncludeExcludeKind
             && string.Equals(includeExcludeLineKind, BiakSyntaxTokenConstant.INCLUDE_EXCLUDE_END, StringComparison.Ordinal))
         {
-            spans.Add(new BiakClassifiedSpan(
-                markerStart,
-                BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length,
-                _biakMarkerType));
-
             spans.Add(new BiakClassifiedSpan(
                 tokenStart,
                 tokenLength,

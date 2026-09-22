@@ -47,7 +47,6 @@ internal sealed partial class EditorConfigVariantClassifier
 
     private bool TryAddImportDirectiveSpans(
         string directiveToken,
-        int markerStart,
         int tokenStart,
         int tokenLength,
         ICollection<BiakClassifiedSpan> spans)
@@ -56,11 +55,6 @@ internal sealed partial class EditorConfigVariantClassifier
         {
             return false;
         }
-
-        spans.Add(new BiakClassifiedSpan(
-            markerStart,
-            BiakDirectiveTokenConstant.BIAK_MARKER_TOKEN.Length,
-            _biakMarkerType));
 
         spans.Add(new BiakClassifiedSpan(
             tokenStart,
