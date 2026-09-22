@@ -42,14 +42,21 @@ internal sealed partial class EditorConfigVariantClassifier
         HashSet<string> definedVariableNames = new(StringComparer.OrdinalIgnoreCase);
         Dictionary<int, string> validatedIncludeExcludeLineKinds = [];
         Dictionary<int, string> validatedAlwaysEnabledLineKinds = [];
+        HashSet<int> biakVarExpressionContinuationLineNumbers = [];
 
         int pendingIncludeLineNumber = -1;
         int pendingExcludeLineNumber = -1;
         int pendingAlwaysEnabledStartLineNumber = -1;
+        bool insideBiakVarExpression = false;
 
         for (int lineIndex = 0; lineIndex < snapshot.LineCount; lineIndex++)
         {
             string lineText = snapshot.GetLineFromLineNumber(lineIndex).GetText();
+
+            if (insideBiakVarExpression)
+            {
+                biakVarExpressionContinuationLineNumbers.Add(lineIndex);
+            }
 
             string? variableName = TryGetDefinedBiakVariableName(lineText);
             if (!string.IsNullOrEmpty(variableName))
@@ -102,13 +109,92 @@ internal sealed partial class EditorConfigVariantClassifier
             {
                 pendingAlwaysEnabledStartLineNumber = lineIndex;
             }
+
+            string trimmedStart = lineText.TrimStart();
+            int indent = lineText.Length - trimmedStart.Length;
+            bool looksLikeBiakVarContinuation = LooksLikeBiakVarContinuation(trimmedStart);
+
+            if (string.IsNullOrWhiteSpace(lineText)
+                || trimmedStart.StartsWith("#", StringComparison.Ordinal)
+                || trimmedStart.StartsWith("[", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            int equalsIndex = lineText.IndexOf('=');
+            if (equalsIndex < 0)
+            {
+                if (!insideBiakVarExpression && !looksLikeBiakVarContinuation)
+                {
+                    continue;
+                }
+
+                int continuationStart = indent;
+                int continuationCommentSearchStart = continuationStart;
+
+                if (insideBiakVarExpression
+                    && continuationStart < lineText.Length
+                    && lineText[continuationStart] == ';')
+                {
+                    continuationCommentSearchStart = continuationStart + 1;
+                }
+
+                int continuationCommentStart = FindInlineCommentStart(
+                    lineText,
+                    continuationCommentSearchStart);
+                int continuationEndExclusive = continuationCommentStart >= 0
+                    ? continuationCommentStart
+                    : lineText.Length;
+
+                if (continuationEndExclusive > continuationStart)
+                {
+                    insideBiakVarExpression = !IsBiakVarExpressionTerminated(
+                        lineText,
+                        continuationStart,
+                        continuationEndExclusive);
+                }
+
+                continue;
+            }
+
+            int valueStart = equalsIndex + 1;
+            while (valueStart < lineText.Length && char.IsWhiteSpace(lineText[valueStart]))
+            {
+                valueStart++;
+            }
+
+            insideBiakVarExpression = false;
+
+            if (valueStart >= lineText.Length)
+            {
+                continue;
+            }
+
+            if (string.IsNullOrEmpty(variableName))
+            {
+                continue;
+            }
+
+            int inlineCommentStart = FindInlineCommentStart(lineText, valueStart);
+            int valueEndExclusive = inlineCommentStart >= 0
+                ? inlineCommentStart
+                : lineText.Length;
+
+            if (valueEndExclusive > valueStart)
+            {
+                insideBiakVarExpression = !IsBiakVarExpressionTerminated(
+                    lineText,
+                    valueStart,
+                    valueEndExclusive);
+            }
         }
 
         return new SnapshotAnalysis(
             snapshot,
             definedVariableNames,
             validatedIncludeExcludeLineKinds,
-            validatedAlwaysEnabledLineKinds);
+            validatedAlwaysEnabledLineKinds,
+            biakVarExpressionContinuationLineNumbers);
     }
 
     private sealed class SnapshotAnalysis
@@ -117,12 +203,14 @@ internal sealed partial class EditorConfigVariantClassifier
             ITextSnapshot snapshot,
             HashSet<string> definedVariableNames,
             Dictionary<int, string> validatedIncludeExcludeLineKinds,
-            Dictionary<int, string> validatedAlwaysEnabledLineKinds)
+            Dictionary<int, string> validatedAlwaysEnabledLineKinds,
+            HashSet<int> biakVarExpressionContinuationLineNumbers)
         {
             Snapshot = snapshot;
             DefinedVariableNames = definedVariableNames;
             ValidatedIncludeExcludeLineKinds = validatedIncludeExcludeLineKinds;
             ValidatedAlwaysEnabledLineKinds = validatedAlwaysEnabledLineKinds;
+            BiakVarExpressionContinuationLineNumbers = biakVarExpressionContinuationLineNumbers;
         }
 
         public ITextSnapshot Snapshot { get; }
@@ -132,5 +220,7 @@ internal sealed partial class EditorConfigVariantClassifier
         public Dictionary<int, string> ValidatedIncludeExcludeLineKinds { get; }
 
         public Dictionary<int, string> ValidatedAlwaysEnabledLineKinds { get; }
+
+        public HashSet<int> BiakVarExpressionContinuationLineNumbers { get; }
     }
 }

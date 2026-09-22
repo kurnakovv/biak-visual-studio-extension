@@ -96,6 +96,32 @@ internal sealed partial class EditorConfigVariantClassifier
             || trimmedStart.StartsWith(";", StringComparison.Ordinal);
     }
 
+    private static bool IsBiakVarExpressionTerminated(
+        string lineText,
+        int startInclusive,
+        int endExclusive)
+    {
+        bool insideString = false;
+
+        for (int i = startInclusive; i < endExclusive; i++)
+        {
+            char currentChar = lineText[i];
+
+            if (currentChar == '"' && !IsEscaped(lineText, i))
+            {
+                insideString = !insideString;
+                continue;
+            }
+
+            if (!insideString && currentChar == ';')
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static bool IsValidBiakVariableName(string variableName)
     {
         if (string.IsNullOrEmpty(variableName)

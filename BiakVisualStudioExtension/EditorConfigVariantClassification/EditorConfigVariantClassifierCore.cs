@@ -146,9 +146,9 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
         HashSet<string> definedVariableNames = snapshotAnalysis.DefinedVariableNames;
         Dictionary<int, string> validatedIncludeExcludeLineKinds = snapshotAnalysis.ValidatedIncludeExcludeLineKinds;
         Dictionary<int, string> validatedAlwaysEnabledLineKinds = snapshotAnalysis.ValidatedAlwaysEnabledLineKinds;
+        HashSet<int> biakVarExpressionContinuationLineNumbers = snapshotAnalysis.BiakVarExpressionContinuationLineNumbers;
 
         int lastLineNumber = -1;
-        bool insideBiakVarExpression = false;
 
         foreach (SnapshotSpan span in spans)
         {
@@ -161,6 +161,8 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
             lastLineNumber = line.LineNumber;
 
             string lineText = line.GetText();
+            bool insideBiakVarExpression =
+                biakVarExpressionContinuationLineNumbers.Contains(line.LineNumber);
 
             if (string.IsNullOrWhiteSpace(lineText))
             {
@@ -282,9 +284,18 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
                 }
 
                 int continuationStart = indent;
+                int continuationCommentSearchStart = continuationStart;
+
+                if (insideBiakVarExpression
+                    && continuationStart < lineText.Length
+                    && lineText[continuationStart] == ';')
+                {
+                    continuationCommentSearchStart = continuationStart + 1;
+                }
+
                 int continuationCommentStart = FindInlineCommentStart(
                     lineText,
-                    continuationStart);
+                    continuationCommentSearchStart);
                 int continuationEndExclusive = continuationCommentStart >= 0
                     ? continuationCommentStart
                     : lineText.Length;
