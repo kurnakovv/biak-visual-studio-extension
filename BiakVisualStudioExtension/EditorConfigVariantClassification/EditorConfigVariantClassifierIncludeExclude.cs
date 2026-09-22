@@ -71,11 +71,6 @@ internal sealed partial class EditorConfigVariantClassifier
         return true;
     }
 
-    private static bool IsBiakStructuralToken(string directiveToken)
-    {
-        return directiveToken.Equals(BiakSyntaxTokenConstant.INCLUDE_EXCLUDE_END, StringComparison.OrdinalIgnoreCase);
-    }
-
     private void TryAddIncludeExcludePairSpan(
         string lineText,
         int directiveEndExclusive,
@@ -168,7 +163,7 @@ internal sealed partial class EditorConfigVariantClassifier
             return true;
         }
 
-        if (IsBiakStructuralToken(directiveToken)
+        if (directiveToken.Equals(BiakSyntaxTokenConstant.INCLUDE_EXCLUDE_END, StringComparison.OrdinalIgnoreCase)
             && hasValidatedIncludeExcludeKind
             && string.Equals(includeExcludeLineKind, BiakSyntaxTokenConstant.INCLUDE_EXCLUDE_END, StringComparison.Ordinal))
         {
