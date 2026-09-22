@@ -131,7 +131,6 @@ internal sealed class EditorConfigVariantBiakVarFormatDefinition : Classificatio
     public EditorConfigVariantBiakVarFormatDefinition()
     {
         DisplayName = "biak directive: var";
-        // ForegroundColor = Colors.RoyalBlue;
         ForegroundColor = Color.FromRgb(86, 156, 214);
     }
 }
