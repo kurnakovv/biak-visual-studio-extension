@@ -190,14 +190,12 @@ internal sealed partial class EditorConfigVariantClassifier
         string lineText,
         int startInclusive,
         int endExclusive,
-        out bool isTerminated,
         out bool hasExpressionTokens)
     {
         List<BiakClassifiedSpan> spans = [];
         bool insideString = false;
         int stringStart = -1;
         hasExpressionTokens = false;
-        isTerminated = false;
 
         for (int i = startInclusive; i < endExclusive; i++)
         {
@@ -240,7 +238,6 @@ internal sealed partial class EditorConfigVariantClassifier
             {
                 spans.Add(new BiakClassifiedSpan(i, 1, _operatorType));
                 hasExpressionTokens = true;
-                isTerminated = true;
             }
         }
 

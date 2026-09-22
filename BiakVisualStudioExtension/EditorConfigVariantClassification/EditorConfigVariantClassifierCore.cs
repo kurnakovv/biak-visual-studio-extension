@@ -307,7 +307,6 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
                             lineText,
                             continuationStart,
                             continuationEndExclusive,
-                            out bool isContinuationTerminated,
                             out bool hasContinuationTokens);
 
                     if (hasContinuationTokens)
@@ -422,7 +421,6 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
                         lineText,
                         valueStart,
                         valueEndExclusive,
-                        out bool isTerminated,
                         out bool hasExpressionTokens);
 
                     if (hasExpressionTokens)
