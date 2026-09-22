@@ -321,8 +321,6 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
                                 expressionSpan.ClassificationType);
                         }
                     }
-
-                    insideBiakVarExpression = !isContinuationTerminated;
                 }
 
                 if (continuationCommentStart >= 0)
@@ -397,7 +395,6 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
                  : string.Empty;
 
             bool isBiakVarAssignmentLine = HasBiakVarDirectiveToken(biakSpans);
-            insideBiakVarExpression = false;
 
             if (valueEndExclusive > valueStart)
             {
@@ -447,8 +444,6 @@ internal sealed partial class EditorConfigVariantClassifier : ITagger<Classifica
                             valueEndExclusive - valueStart,
                             _stringType);
                     }
-
-                    insideBiakVarExpression = !isTerminated;
                 }
                 else
                 {
